@@ -22,7 +22,9 @@ class MockTestView extends GetView<MockTestController> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Get.back(),
+          onPressed: () {
+  Navigator.of(context).pop();  // Use Flutter's native pop
+},
         ),
         title: const Text(
           "Select Test Resources",

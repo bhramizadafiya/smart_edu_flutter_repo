@@ -1,0 +1,5 @@
+- [ ] Implement dynamic font scaling in coresubjects_view.dart based on screen width
+- [ ] Add getScaleFactor function with base width 375 and clamp 0.8 to 2.0
+- [ ] Update all font sizes in build method to use scale factor
+- [ ] Update font sizes in _buildSubjectCard method
+- [ ] Test responsiveness on different screen sizes

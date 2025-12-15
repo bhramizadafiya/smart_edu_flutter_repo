@@ -8,6 +8,8 @@ import 'package:smarted/modules/chatscreen/controller/chatscreen_controller.dart
 import 'package:smarted/modules/chatscreen/view/chatscreen_view.dart';
 import 'package:smarted/modules/languageselection/controller/languageselection_controller.dart';
 import 'package:smarted/modules/languageselection/view/languageselection_view.dart';
+import 'package:smarted/modules/mocktest/controller/mocktest_controller.dart';
+import 'package:smarted/modules/mocktest/view/mocktest_view.dart';
 import 'package:smarted/modules/studymateriallist/controller/studymateriallist_controller.dart';
 import 'package:smarted/modules/studymateriallist/view/studymateriallist_view.dart';
 
@@ -130,8 +132,10 @@ void onFeatureTap(int index) {
       break;
 
     case 2: // Mock Test
-      Get.toNamed('/mocktest');
-      break;
+    Get.put(MockTestController());
+    Get.to(()=> const MockTestView());
+ //   Get.toNamed('/mocktest');
+    //  break;
 
     case 3: // JEE/NEET Exams
       Get.toNamed('/competitive-exams');
