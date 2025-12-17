@@ -283,8 +283,7 @@ class TestModeView extends GetView<TestModeController> {
         backgroundColor: color,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 14,
-        shadowColor: color.withOpacity(0.5),
+    
       ),
     ),
   ),
@@ -371,7 +370,7 @@ class TestModeView extends GetView<TestModeController> {
                 backgroundColor: Color.fromARGB(255, 45, 166, 124),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 14,
+                
               ),
             ),
           ),

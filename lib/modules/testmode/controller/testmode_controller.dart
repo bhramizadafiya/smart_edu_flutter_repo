@@ -1,6 +1,8 @@
 // controller/testmode_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smarted/modules/onpapertest/binding/onpapertest_binding.dart';
+import 'package:smarted/modules/onpapertest/view/onpapertest_view.dart';
 
 enum TestMode { online, paper }
 
@@ -68,7 +70,6 @@ class TestModeController extends GetxController {
   }
 
   void generatePaperTest() {
-    Get.snackbar("Generating", "PDF is being generated...", backgroundColor: Color(0xFF34BF8E), colorText: Colors.white);
-    // Generate PDF
+   Get.to(() => const OnTestPaperView(), binding: OnTestPaperBinding());
   }
 }
