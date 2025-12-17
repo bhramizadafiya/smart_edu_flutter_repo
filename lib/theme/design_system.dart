@@ -18,9 +18,9 @@ class AppColors {
   static const Color lightGreen = Color(0xFFE8F3ED);
   static const Color borderColor = Color(0xFFE0E0E0);
 
-static const Color gradientStartBlue   = Color(0xFF2E88FF); // Bright dark-blue (top)
-static const Color gradientMiddleBlue  = Color(0xFF1B6BE0); // Rich mid-blue
-static const Color gradientEndBlue     = Color(0xFF0D47A1); // Very deep blue (bottom)
+  static const Color gradientStartBlue   = Color(0xFF2E88FF); // Bright dark-blue 
+  static const Color gradientMiddleBlue  = Color(0xFF1B6BE0); // Rich mid-blue
+  static const Color gradientEndBlue     = Color(0xFF0D47A1); // Very deep blue 
 
 
 }

@@ -1,11 +1,12 @@
-// addchapter_controller.dart
+// addstudymaterial_controller.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../studymateriallist/controller/studymateriallist_controller.dart';
 
 class UploadFileModel {
   final String name;
-  final String type; // "PDF", "DOC", "IMG"
+  final String type;
   final double sizeMB;
   RxDouble progress = 0.0.obs;
   RxBool uploaded = false.obs;
@@ -18,24 +19,19 @@ class UploadFileModel {
 }
 
 class AddStudyMaterialController extends GetxController {
-  // Form controllers
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
 
-  // Dropdowns
   final language = 'English'.obs;
   final category = 'Textbook'.obs;
   final isPublic = true.obs;
 
-  // File uploads
   final RxList<UploadFileModel> files = <UploadFileModel>[].obs;
   final Rxn<String> coverImagePath = Rxn<String>();
 
-  // UI state
   final RxBool uploading = false.obs;
   final RxBool saving = false.obs;
 
-  // Mock: supported languages and categories
   final languages = ['English', 'Hindi', 'Gujarati', 'Spanish'];
   final categories = [
     'Textbook',
@@ -44,6 +40,18 @@ class AddStudyMaterialController extends GetxController {
     'Question Bank',
   ];
 
+  // Reference to StudyMaterialListController
+  StudyMaterialListController? listController;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Safely try to find the list controller
+    if (Get.isRegistered<StudyMaterialListController>()) {
+      listController = Get.find<StudyMaterialListController>();
+    }
+  }
+
   @override
   void onClose() {
     titleCtrl.dispose();
@@ -51,10 +59,9 @@ class AddStudyMaterialController extends GetxController {
     super.onClose();
   }
 
-  // Add a mock file (simulate browsing)
-  void addMockFile({String? name, String type = 'PDF', double sizeMB = 5.2}) {
+  void addMockFile({String? name, String type = 'PDF', double sizeMB = 15.2}) {
     final file = UploadFileModel(
-      name: name ?? 'file_${files.length + 1}.pdf',
+      name: name ?? 'calculus_textbook.pdf',
       type: type,
       sizeMB: sizeMB,
     );
@@ -62,123 +69,136 @@ class AddStudyMaterialController extends GetxController {
     _simulateUpload(file);
   }
 
-  // Simulate upload progress for a file
   void _simulateUpload(UploadFileModel file) {
     uploading.value = true;
-    file.progress.value = 0;
-    Timer.periodic(const Duration(milliseconds: 200), (t) {
-      final cur = file.progress.value + (0.12 + (0.08 * (files.length % 3)));
-      file.progress.value = cur.clamp(0.0, 1.0);
+    file.progress.value = 0.0;
+
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      file.progress.value = (file.progress.value + 0.15).clamp(0.0, 1.0);
+
       if (file.progress.value >= 1.0) {
         file.uploaded.value = true;
-        file.progress.value = 1.0;
-        t.cancel();
-        // check if all uploaded
-        if (files.every((f) => f.uploaded.value)) uploading.value = false;
+        timer.cancel();
+
+        // Check if all files are uploaded
+        if (files.every((f) => f.uploaded.value)) {
+          uploading.value = false;
+        }
       }
     });
   }
 
-  // Remove file
   void removeFile(int index) {
-    files.removeAt(index);
+    if (index >= 0 && index < files.length) {
+      files.removeAt(index);
+    }
   }
 
-  // Pick cover image (mock) — open sheet and set a placeholder path
   void openCoverPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: Colors.green,
-                  ),
-                  title: const Text('Take Photo'),
-                  onTap: () {
-                    coverImagePath.value = 'assets/mock_cover_camera.png';
-                    Get.back();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.photo_library_rounded,
-                    color: Colors.green,
-                  ),
-                  title: const Text('From Gallery'),
-                  onTap: () {
-                    coverImagePath.value = 'assets/mock_cover_gallery.png';
-                    Get.back();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.image_outlined, color: Colors.grey),
-                  title: const Text('Default'),
-                  onTap: () {
-                    coverImagePath.value = null;
-                    Get.back();
-                  },
-                ),
-              ],
-            ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: Colors.green, size: 28),
+                title: const Text('Take Photo', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  coverImagePath.value = 'assets/mock_cover_camera.png';
+                  Get.back();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: Colors.green, size: 28),
+                title: const Text('From Gallery', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  coverImagePath.value = 'assets/mock_cover_gallery.png';
+                  Get.back();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined, color: Colors.grey, size: 28),
+                title: const Text('Default', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  coverImagePath.value = null;
+                  Get.back();
+                },
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // Save resource (validate basic fields)
   Future<void> saveResource() async {
+    // Validation
     if (titleCtrl.text.trim().isEmpty) {
-      Get.snackbar(
-        'Validation',
-        'Please enter resource title',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Error', 'Please enter a resource title', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.shade100, colorText: Colors.red.shade900);
       return;
     }
+
     if (files.isEmpty) {
-      Get.snackbar(
-        'Validation',
-        'Please upload at least one file',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Error', 'Please upload at least one file', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.shade100, colorText: Colors.red.shade900);
       return;
     }
-    // make sure uploads complete
+
     if (files.any((f) => !f.uploaded.value)) {
-      Get.snackbar(
-        'Uploads',
-        'Please wait for all uploads to complete',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Please Wait', 'All files must finish uploading', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
     saving.value = true;
-    await Future.delayed(const Duration(milliseconds: 600));
-    // TODO: call API / save logic
+
+    // Simulate save delay
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    // Create new material
+    final newMaterial = {
+      'title': titleCtrl.text.trim(),
+      'subtitle': descCtrl.text.trim().isEmpty ? 'No description' : descCtrl.text.trim(),
+      'type': '${files.first.type} • ${files.first.sizeMB.toStringAsFixed(1)} MB',
+      'status': 'Processed',
+      'statusColor': 0xFF00C853,
+      'icon': files.first.type == 'PDF' ? '📘' : files.first.type == 'DOC' ? '📄' : '🖼️',
+      'time': 'Just now',
+    };
+
+    // Update the main list if possible
+    if (listController != null && Get.isRegistered<StudyMaterialListController>()) {
+      listController!.studyMaterials.insert(0, newMaterial);
+      listController!.applyFilterAndSort(); // Refresh UI
+    }
+
     saving.value = false;
+
+    // Success message
     Get.snackbar(
-      'Success',
-      'Resource uploaded successfully',
+      'Success!',
+      'Study material uploaded successfully',
       snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green.shade100,
+      colorText: Colors.green.shade900,
+      duration: const Duration(seconds: 3),
     );
-    // Optionally clear form
+
+    // Clear form
     titleCtrl.clear();
     descCtrl.clear();
     files.clear();
     coverImagePath.value = null;
+    language.value = 'English';
+    category.value = 'Textbook';
     isPublic.value = true;
+
+    // Go back to list
+    Get.back();
   }
 }

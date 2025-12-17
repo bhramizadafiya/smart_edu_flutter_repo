@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StudyMaterialListController extends GetxController {
-  /// Original full list of study materials
+  /// Original full list of study materials (source of truth)
   var studyMaterials = <Map<String, dynamic>>[].obs;
 
-  /// Filtered list shown in the UI
+  /// Filtered and sorted list shown in the UI
   var filteredMaterials = <Map<String, dynamic>>[].obs;
 
   /// Reactive search query
   var searchQuery = ''.obs;
+
+  /// Sort state: true = ascending (A-Z), false = descending (Z-A)
+  final RxBool sortAscending = false.obs;
 
   /// TextEditingController for the search TextField
   TextEditingController searchController = TextEditingController();
@@ -17,14 +20,15 @@ class StudyMaterialListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    // Load initial study materials
     loadStudyMaterials();
 
-    // Debounce search: wait 300ms after user stops typing before filtering
+    // Start with descending order (Z-A) by default
+    sortAscending.value = false;
+
+    // Debounce search: wait 300ms after typing stops
     debounce(
       searchQuery,
-      (_) => filterMaterials(),
+      (_) => applyFilterAndSort(),
       time: const Duration(milliseconds: 300),
     );
   }
@@ -70,65 +74,67 @@ class StudyMaterialListController extends GetxController {
       },
     ];
 
-    // Initially show all materials
-    filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
+    filteredMaterials.value = List.from(studyMaterials);
   }
 
-  /// Filter materials based on search query
-  void filterMaterials() {
-    final query = searchQuery.value.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
-    } else {
-      filteredMaterials.value = studyMaterials.where((material) {
-        final title = material['title'].toString().toLowerCase();
-        final subtitle = material['subtitle'].toString().toLowerCase();
-        final type = material['type'].toString().toLowerCase();
-        return title.contains(query) ||
-            subtitle.contains(query) ||
-            type.contains(query);
-      }).toList();
-    }
-  }
-
-  /// Called when user types in the search bar
+  /// Called when user types in search bar
   void onSearchChanged(String value) {
     searchQuery.value = value;
   }
 
-  /// Clear search input and reset the list
+  /// Clear search and reset list
   void clearSearch() {
     searchController.clear();
     searchQuery.value = '';
-    filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
+    applyFilterAndSort();
   }
 
   /// Upload button action
   void onUploadPressed() {
-    Get.snackbar(
-      'Upload',
-      'Add new material clicked',
-      snackPosition: SnackPosition.BOTTOM,
-    );
     Get.toNamed('/add-study-material');
   }
 
   /// Preview button action
   void onPreviewPressed() {
-    Get.snackbar(
-      'Preview',
-      'Preview Book clicked',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.snackbar('Preview', 'Preview Book clicked', snackPosition: SnackPosition.BOTTOM);
   }
 
-  /// Sort button action
+  /// Toggle sort order between ascending and descending
   void onSortPressed() {
-    Get.snackbar(
-      'Sort',
-      'Sort button clicked',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    sortAscending.value = !sortAscending.value;
+    applyFilterAndSort();
+  }
+
+  /// Public method: Apply search filter and sorting (called from view after edit/delete/add)
+  void applyFilterAndSort() {
+    List<Map<String, dynamic>> tempList = List.from(studyMaterials);
+
+    // Apply search filter
+    final query = searchQuery.value.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      tempList = tempList.where((material) {
+        return material['title'].toString().toLowerCase().contains(query) ||
+            material['subtitle'].toString().toLowerCase().contains(query) ||
+            material['type'].toString().toLowerCase().contains(query);
+      }).toList();
+    }
+
+    // Apply sorting by title
+    tempList.sort((a, b) {
+      final comparison = a['title']
+          .toString()
+          .toLowerCase()
+          .compareTo(b['title'].toString().toLowerCase());
+      return sortAscending.value ? comparison : -comparison;
+    });
+
+    // Update displayed list
+    filteredMaterials.value = tempList;
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
   }
 }

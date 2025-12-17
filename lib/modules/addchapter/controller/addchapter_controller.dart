@@ -5,19 +5,18 @@ import '../../chapterlist/controller/chapterlist_controller.dart';
 class AddChapterController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
+  // No initial text — fields will be empty on load
   final TextEditingController chapterNameCtrl = TextEditingController();
-  final TextEditingController startPageCtrl = TextEditingController(text: '1');
-  final TextEditingController endPageCtrl = TextEditingController(text: '1');
+  final TextEditingController startPageCtrl = TextEditingController();
+  final TextEditingController endPageCtrl = TextEditingController();
 
   final RxBool saving = false.obs;
 
-  /// Optional: If you want to push the new chapter to ChapterListController
   ChapterListController? chapterListController;
 
   @override
   void onInit() {
     super.onInit();
-    // try to find ChapterListController if it's already in memory
     try {
       chapterListController = Get.find<ChapterListController>();
     } catch (_) {
@@ -39,47 +38,45 @@ class AddChapterController extends GetxController {
   }
 
   void saveChapter() async {
-    final form = formKey.currentState;
-    if (form == null) return;
-    if (!form.validate()) return;
+    if (!formKey.currentState!.validate()) return;
 
-    final start = int.parse(startPageCtrl.text.trim());
-    final end = int.parse(endPageCtrl.text.trim());
-    if (start > end) {
+    final start = int.tryParse(startPageCtrl.text.trim());
+    final end = int.tryParse(endPageCtrl.text.trim());
+
+    if (start == null || end == null || start > end) {
       Get.snackbar(
         'Invalid pages',
         'Start page cannot be greater than End page',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
       );
       return;
     }
 
     saving.value = true;
-
-    // simulate API / DB delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 800));
 
     final chapter = {
       'title': chapterNameCtrl.text.trim(),
       'pages': 'Pages $start–$end • ${end - start + 1} pages',
     };
 
-    // If ChapterListController exists add the new chapter there
     if (chapterListController != null) {
       chapterListController!.addChapter(chapter);
     } else {
-      // fallback: store locally or show toast
-      debugPrint(
-        'No ChapterListController found — chapter created locally: $chapter',
-      );
+      debugPrint('Chapter created locally: $chapter');
     }
 
     saving.value = false;
-    Get.back(); // close Add chapter screen
+    Get.back();
+
     Get.snackbar(
-      'Saved',
-      'Chapter saved successfully',
+      'Success',
+      'Chapter saved successfully!',
       snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green.shade100,
+      colorText: Colors.green.shade900,
     );
   }
 

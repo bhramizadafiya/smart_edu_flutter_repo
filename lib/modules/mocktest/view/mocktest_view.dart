@@ -412,70 +412,66 @@ class MockTestView extends GetView<MockTestController> {
                                   ),
 
                                   if (book.isExpanded)
-                                    Container(
-                                      color: const Color(0xFFE8F5E8),
-                                      child: Column(
-                                        children: book.chapters.map((chapter) {
-                                          return Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: horizontalPadding + 10),
-                                            child: Container(
-                                              padding: const EdgeInsets.fromLTRB(
-                                                  40, 12, 20, 12),
-                                              decoration: BoxDecoration(
-                                                color: chapter.isSelected
-                                                    ? const Color(0xFFE8F5E8)
-                                                    : Colors.white,
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                    color: chapter.isSelected
-                                                        ? const Color(0xFF34BF8E)
-                                                        : Colors.grey.shade300,
-                                                    width: chapter.isSelected ? 2 : 1,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Checkbox(
-                                                    value: chapter.isSelected,
-                                                    activeColor:
-                                                        const Color(0xFF34BF8E),
-                                                    onChanged: (_) => controller
-                                                        .toggleChapterSelection(
-                                                            book, chapter),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text(
-                                                          chapter.title,
-                                                          style: const TextStyle(
-                                                            fontSize: 14.5,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: Color(0xFF0C4525),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 4),
-                                                        Text(
-                                                          "Pages ${chapter.pages} • ${chapter.topics} topics",
-                                                          style: TextStyle(
-                                                              color: Colors.grey[600],
-                                                              fontSize: 12.5),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
+  Container(
+    width: double.infinity,
+    color: const Color.fromARGB(255, 243, 243, 243),
+    child: Column(
+      children: book.chapters.map((chapter) {
+        return InkWell(
+          onTap: () =>
+              controller.toggleChapterSelection(book, chapter), // 👈 tap anywhere
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding + 36,
+              14,
+              horizontalPadding,
+              14,
+            ),
+            color: Colors.grey.shade100,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: chapter.isSelected,
+                  activeColor: const Color(0xFF34BF8E),
+                  onChanged: (_) =>
+                      controller.toggleChapterSelection(book, chapter),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Chapter title
+                      Text(
+                        chapter.title,
+                        style: const TextStyle(
+                          fontSize: 14.8,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Subtitle
+                      Text(
+                        "Pages ${chapter.pages} • ${chapter.topics} topics",
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    ),
+  ),
+
 
                                   Container(height: 1, color: Colors.grey[300]),
                                 ],
