@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StudyMaterialListController extends GetxController {
-  // Original full list
+  /// Original full list of study materials
   var studyMaterials = <Map<String, dynamic>>[].obs;
 
-  // Filtered list shown in UI
+  /// Filtered list shown in the UI
   var filteredMaterials = <Map<String, dynamic>>[].obs;
 
-  // Reactive search query
+  /// Reactive search query
   var searchQuery = ''.obs;
+
+  /// TextEditingController for the search TextField
+  TextEditingController searchController = TextEditingController();
 
   @override
   void onInit() {
     super.onInit();
+
+    // Load initial study materials
     loadStudyMaterials();
 
     // Debounce search: wait 300ms after user stops typing before filtering
@@ -24,6 +29,7 @@ class StudyMaterialListController extends GetxController {
     );
   }
 
+  /// Load initial study materials (mock data)
   void loadStudyMaterials() {
     studyMaterials.value = [
       {
@@ -64,34 +70,41 @@ class StudyMaterialListController extends GetxController {
       },
     ];
 
-    // Initially show all
-    filteredMaterials.value = studyMaterials;
+    // Initially show all materials
+    filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
   }
 
+  /// Filter materials based on search query
   void filterMaterials() {
     final query = searchQuery.value.trim().toLowerCase();
 
     if (query.isEmpty) {
-      filteredMaterials.value = studyMaterials;
+      filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
     } else {
       filteredMaterials.value = studyMaterials.where((material) {
         final title = material['title'].toString().toLowerCase();
-        return title.contains(query);
+        final subtitle = material['subtitle'].toString().toLowerCase();
+        final type = material['type'].toString().toLowerCase();
+        return title.contains(query) ||
+            subtitle.contains(query) ||
+            type.contains(query);
       }).toList();
     }
   }
 
-  // Call this from TextField's onChanged
+  /// Called when user types in the search bar
   void onSearchChanged(String value) {
     searchQuery.value = value;
   }
 
-  // Clear search
+  /// Clear search input and reset the list
   void clearSearch() {
+    searchController.clear();
     searchQuery.value = '';
+    filteredMaterials.value = List<Map<String, dynamic>>.from(studyMaterials);
   }
 
-  // Your existing actions
+  /// Upload button action
   void onUploadPressed() {
     Get.snackbar(
       'Upload',
@@ -101,6 +114,7 @@ class StudyMaterialListController extends GetxController {
     Get.toNamed('/add-study-material');
   }
 
+  /// Preview button action
   void onPreviewPressed() {
     Get.snackbar(
       'Preview',
@@ -109,6 +123,7 @@ class StudyMaterialListController extends GetxController {
     );
   }
 
+  /// Sort button action
   void onSortPressed() {
     Get.snackbar(
       'Sort',

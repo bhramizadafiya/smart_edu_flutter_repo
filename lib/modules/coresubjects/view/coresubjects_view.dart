@@ -1,7 +1,5 @@
-// lib/modules/coresubjects/view/coresubjects_view.dart
-
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
+import 'package:get/get.dart';
 import '../controller/coresubjects_controller.dart';
 
 class CoreSubjectsView extends GetView<CoreSubjectsController> {
@@ -9,25 +7,19 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth > 600;
-    final double horizontalPadding = isTablet ? 40 : 20;
-    final double cardPadding = isTablet ? 24 : 20;
-    final double iconSize = isTablet ? 80 : 72;
-    final double titleFontSize = isTablet ? 25 : 23;
-    final double subtitleFontSize = isTablet ? 15 : 14;
-
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // ================= APP BAR =================
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
           "Class 11 - Subjects",
           style: TextStyle(
             color: const Color(0xFF0A4D3D),
-            fontSize: isTablet ? 21 : 19,
+            fontSize: _responsiveTitle(context),
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -37,176 +29,258 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
         ),
       ),
 
-      body: Column(
-        children: [
-          // Top Header - Responsive
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFF1FDF6),
-            padding: EdgeInsets.only(top: 20, bottom: isTablet ? 40 : 30),
+      // ================= BODY =================
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+
+          // ✅ BREAKPOINTS
+          final bool isMobile = width < 700;
+          final bool isTablet = width >= 700 && width < 1024;
+          final bool isDesktop = width >= 1024;
+
+          // ================= SIZES =================
+          final double horizontalPadding =
+              isDesktop ? width * 0.08 : (isTablet ? 44 : 20);
+          final double contentMaxWidth =
+              isDesktop ? 1100 : (isTablet ? 900 : double.infinity);
+          final double iconSize =
+              isDesktop ? 92 : (isTablet ? 80 : 68);
+          final double cardPadding =
+              isDesktop ? 28 : (isTablet ? 24 : 18);
+          final double titleFontSize =
+              isDesktop ? 26 : (isTablet ? 24 : 21);
+          final double subtitleFontSize =
+              isDesktop ? 16 : (isTablet ? 15 : 13.5);
+
+          // ✅ Reduced vertical space below header
+          final double headerBottomSpace =
+              isDesktop ? 50 : (isTablet ? 40 : 50);
+
+          return SingleChildScrollView(
             child: Column(
               children: [
+
+                // ================= HEADER =================
                 Container(
-                  width: isTablet ? 80 : 64,
-                  height: isTablet ? 80 : 64,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF66D1B2), Color(0xFF3BAA8F), Color(0xFF1C524A)],
-                    ),
+                  width: double.infinity,
+                  color: const Color(0xFFF1FDF6),
+                  padding: EdgeInsets.only(
+                    top: 24,
+                    bottom: headerBottomSpace,
                   ),
                   child: Center(
-                    child: Text(
-                      "11",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isTablet ? 32 : 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Class 11 Science",
-                  style: TextStyle(
-                    fontSize: isTablet ? 26 : 23,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF0A3D33),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    "Select a subject to access study materials,\npractice tests, and AI assistance",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: isTablet ? 16 : 14.5,
-                      color: const Color(0xFF0A7860),
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                      child: Column(
+                        children: [
 
-          // Main Content
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(horizontalPadding),
-              children: [
-                Text(
-                  "Core Subjects",
-                  style: TextStyle(
-                    fontSize: isTablet ? 24 : 22,
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF0A4D3D),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Core Subjects - Responsive Cards
-                ...controller.coreSubjects.map((s) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _buildSubjectCard(
-                        s,
-                        iconSize: iconSize,
-                        cardPadding: cardPadding,
-                        titleFontSize: titleFontSize,
-                        subtitleFontSize: subtitleFontSize,
-                      ),
-                    )),
-
-                const SizedBox(height: 12),
-
-                // View More / View Less Button - Full Width & Responsive
-                GestureDetector(
-                  onTap: controller.toggleViewMore,
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      vertical: isTablet ? 20 : 16,
-                      horizontal: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F7FA),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        Obx(() => Icon(
-                              controller.showAllSubjects.value
-                                  ? Icons.remove
-                                  : Icons.add,
-                              color: const Color(0xFF7A8A99),
-                              size: isTablet ? 28 : 26,
-                            )),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Obx(() => Text(
-                                    controller.showAllSubjects.value
-                                        ? "View Less Subjects"
-                                        : "View More Subjects",
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 17 : 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: const Color(0xFF2D3748),
-                                    ),
-                                  )),
-                              Text(
-                                "Hindi, Sanskrit, Social Science, IT & more",
+                          // CLASS CIRCLE
+                          Container(
+                            width: isDesktop ? 100 : (isTablet ? 84 : 66),
+                            height: isDesktop ? 100 : (isTablet ? 84 : 66),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF66D1B2),
+                                  Color(0xFF3BAA8F),
+                                  Color(0xFF1C524A),
+                                ],
+                              ),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "11",
                                 style: TextStyle(
-                                  fontSize: isTablet ? 14 : 13,
-                                  color: const Color(0xFF718096),
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 18,
-                          color: Color(0xFF718096),
-                        ),
-                      ],
+
+                          const SizedBox(height: 14), // Reduced spacing
+
+                          Text(
+                            "Class 11 Science",
+                            style: TextStyle(
+                              fontSize:
+                                  isDesktop ? 30 : (isTablet ? 26 : 22),
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFF0A3D33),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8), // Reduced spacing
+
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  isDesktop ? 80 : (isTablet ? 60 : 28),
+                            ),
+                            child: Text(
+                              "Select a subject to access study materials,\npractice tests, and AI assistance",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize:
+                                    isDesktop ? 17 : (isTablet ? 16 : 14),
+                                color: const Color(0xFF0A7860),
+                                height: 1.55,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
 
-                // More Subjects - Appear on toggle
-                Obx(() => controller.showAllSubjects.value
-                    ? Column(
-                        children: controller.moreSubjects
-                            .map((s) => Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: _buildSubjectCard(
-                                    s,
-                                    iconSize: iconSize,
-                                    cardPadding: cardPadding,
-                                    titleFontSize: titleFontSize,
-                                    subtitleFontSize: subtitleFontSize,
-                                  ),
-                                ))
-                            .toList(),
-                      )
-                    : const SizedBox()),
+                // ================= MAIN CONTENT =================
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
 
-                const SizedBox(height: 40),
+                          const SizedBox(height: 10),
+
+                          Text(
+                            "Core Subjects",
+                            style: TextStyle(
+                              fontSize:
+                                  isDesktop ? 26 : (isTablet ? 24 : 22),
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFF0A4D3D),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          ...controller.coreSubjects.map(
+                            (s) => Padding(
+                              padding: const EdgeInsets.only(bottom: 18),
+                              child: _buildSubjectCard(
+                                s,
+                                iconSize: iconSize,
+                                cardPadding: cardPadding,
+                                titleFontSize: titleFontSize,
+                                subtitleFontSize: subtitleFontSize,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // VIEW MORE
+                          GestureDetector(
+                            onTap: controller.toggleViewMore,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(
+                                vertical:
+                                    isDesktop ? 26 : (isTablet ? 22 : 18),
+                                horizontal: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F7FA),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Obx(
+                                    () => Icon(
+                                      controller.showAllSubjects.value
+                                          ? Icons.remove
+                                          : Icons.add,
+                                      size: 26,
+                                      color: const Color(0xFF7A8A99),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Obx(
+                                          () => Text(
+                                            controller.showAllSubjects.value
+                                                ? "View Less Subjects"
+                                                : "View More Subjects",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: Color(0xFF2D3748),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        const Text(
+                                          "Hindi, Sanskrit, Social Science, IT & more",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF718096),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 18,
+                                    color: Color(0xFF718096),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          Obx(
+                            () => controller.showAllSubjects.value
+                                ? Column(
+                                    children: controller.moreSubjects
+                                        .map(
+                                          (s) => Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 18),
+                                            child: _buildSubjectCard(
+                                              s,
+                                              iconSize: iconSize,
+                                              cardPadding: cardPadding,
+                                              titleFontSize: titleFontSize,
+                                              subtitleFontSize:
+                                                  subtitleFontSize,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  )
+                                : const SizedBox(),
+                          ),
+
+                          const SizedBox(height: 50),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  // Responsive Subject Card
+  // ================= SUBJECT CARD =================
   Widget _buildSubjectCard(
     Map<String, dynamic> s, {
     required double iconSize,
@@ -217,9 +291,9 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
     final String title = s["title"];
     final String subtitle = s["subtitle"];
     final Color mainColor = s["color"];
-
-    final List<Color> iconGradient = (s["gradientColors"] as List<Color>?) ??
-        [mainColor.withOpacity(0.9), mainColor, mainColor.withOpacity(0.7)];
+    final List<Color> iconGradient =
+        (s["gradientColors"] as List<Color>?) ??
+            [mainColor.withOpacity(0.9), mainColor, mainColor.withOpacity(0.7)];
 
     final Widget centerWidget = (title == "Physics")
         ? Text(
@@ -242,7 +316,8 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
               "Sanskrit": Icons.auto_stories_rounded,
               "Social Science": Icons.public_rounded,
               "IT": Icons.computer_rounded,
-            }[title] ?? Icons.book_rounded,
+            }[title] ??
+                Icons.book_rounded,
             size: iconSize * 0.55,
             color: Colors.white,
           );
@@ -254,7 +329,7 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade200, width: 1.2),
+          border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.08),
@@ -265,23 +340,16 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
         ),
         child: Row(
           children: [
-            // Gradient Icon Circle
             Container(
               width: iconSize,
               height: iconSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: iconGradient,
-                ),
+                gradient: LinearGradient(colors: iconGradient),
               ),
               child: Center(child: centerWidget),
             ),
-
             const SizedBox(width: 20),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,22 +367,25 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
                     subtitle,
                     style: TextStyle(
                       fontSize: subtitleFontSize,
-                      color: Colors.grey[700],
                       height: 1.4,
+                      color: Colors.grey[700],
                     ),
                   ),
                 ],
               ),
             ),
-
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 20,
-              color: const Color(0xFF3BAA8F),
-            ),
+            const Icon(Icons.arrow_forward_ios,
+                size: 20, color: Color(0xFF3BAA8F)),
           ],
         ),
       ),
     );
+  }
+
+  double _responsiveTitle(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    if (w >= 1024) return 22;
+    if (w >= 700) return 21;
+    return 18;
   }
 }

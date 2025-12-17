@@ -1,7 +1,6 @@
 // lib/modules/onlinetest/view/onlinetest_view.dart
-
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
+import 'package:get/get.dart';
 import 'package:smarted/modules/onlinetest/controller/onlinetest_controller.dart';
 
 class OnlineTestView extends GetView<OnlineTestController> {
@@ -9,23 +8,28 @@ class OnlineTestView extends GetView<OnlineTestController> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Scaling factor
+    final double baseWidth = 360.0;
+    final scale = (screenWidth / baseWidth).clamp(0.8, 1.4);
+
     // Auto scroll palette to current question
     ever(controller.currentIndex, (int index) {
       if (controller.paletteScrollController.hasClients) {
-        final double itemWidth = 34.0;
-        final double targetOffset = (index * itemWidth) - (Get.width / 2) + (itemWidth / 2);
+        final double itemWidth = 34.0 * scale + 6 * scale; // Include margin
+        final double screenCenter = MediaQuery.of(context).size.width / 2;
+        final double targetOffset = (index * itemWidth) - screenCenter + (itemWidth / 2);
         final double maxScroll = controller.paletteScrollController.position.maxScrollExtent;
         final double finalOffset = targetOffset.clamp(0.0, maxScroll);
 
         controller.paletteScrollController.animateTo(
           finalOffset,
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 400),
           curve: Curves.easeInOut,
         );
       }
     });
-
- 
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -37,21 +41,25 @@ class OnlineTestView extends GetView<OnlineTestController> {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: EdgeInsets.all(6 * scale),
               decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.laptop_mac, color: Color.fromARGB(255, 5, 34, 7), size: 26),
+              child: Icon(Icons.laptop_mac, color: const Color.fromARGB(255, 5, 34, 7), size: 26 * scale),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12 * scale),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Mathematics Mock Test',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 2),
-                  Obx(() => Text('Question ${controller.currentIndex.value + 1} of ${controller.totalQuestions}',
-                      style: const TextStyle(fontSize: 13, color: Colors.white70))),
+                  Text(
+                    'Mathematics Mock Test',
+                    style: TextStyle(fontSize: 17 * scale, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 2 * scale),
+                  Obx(() => Text(
+                        'Question ${controller.currentIndex.value + 1} of ${controller.totalQuestions}',
+                        style: TextStyle(fontSize: 13 * scale, color: Colors.white70),
+                      )),
                 ],
               ),
             ),
@@ -59,8 +67,8 @@ class OnlineTestView extends GetView<OnlineTestController> {
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            margin: EdgeInsets.only(right: 8 * scale),
+            padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 6 * scale),
             decoration: BoxDecoration(
               color: const Color.fromARGB(255, 2, 39, 3),
               borderRadius: BorderRadius.circular(30),
@@ -68,12 +76,12 @@ class OnlineTestView extends GetView<OnlineTestController> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.access_time_filled, size: 14, color: Colors.white),
-                const SizedBox(width: 8),
+                Icon(Icons.access_time_filled, size: 14 * scale, color: Colors.white),
+                SizedBox(width: 8 * scale),
                 Obx(() => Text(
-                  controller.formattedTime,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-                )),
+                      controller.formattedTime,
+                      style: TextStyle(fontSize: 12 * scale, fontWeight: FontWeight.bold, color: Colors.white),
+                    )),
               ],
             ),
           ),
@@ -86,36 +94,40 @@ class OnlineTestView extends GetView<OnlineTestController> {
                 actions: [TextButton(onPressed: () => Get.back(), child: const Text("OK"))],
               ),
             ),
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white, size: 25),
+            icon: Icon(Icons.help_outline_rounded, color: Colors.white, size: 25 * scale),
           ),
         ],
       ),
-
       body: Column(
         children: [
           // Question Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: EdgeInsets.fromLTRB(20 * scale, 16 * scale, 20 * scale, 0),
             color: Colors.grey[50],
             child: Obx(() {
               final q = controller.allQuestions[controller.currentIndex.value];
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Question ${controller.currentIndex.value + 1}",
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color.fromARGB(221, 7, 71, 53))),
+                  Text(
+                    "Question ${controller.currentIndex.value + 1}",
+                    style: TextStyle(
+                        fontSize: 18 * scale,
+                        fontWeight: FontWeight.w900,
+                        color: const Color.fromARGB(221, 7, 71, 53)),
+                  ),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 5 * scale),
                         decoration: BoxDecoration(
                           color: q.type == "fib"
                               ? const Color(0xFFFFF8F0)
                               : q.type == "mcq"
                                   ? const Color(0xFFFDFDFF)
                                   : const Color(0xFFF3FFF9),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20 * scale),
                           border: Border.all(
                             color: q.type == "fib"
                                 ? const Color(0xFFFF9800)
@@ -133,18 +145,18 @@ class OnlineTestView extends GetView<OnlineTestController> {
                                   : q.type == "mcq"
                                       ? Icons.radio_button_unchecked
                                       : Icons.check_circle_outline,
-                              size: 16,
+                              size: 16 * scale,
                               color: q.type == "fib"
                                   ? const Color(0xFFFF9800)
                                   : q.type == "mcq"
                                       ? const Color(0xFF04190C)
                                       : const Color(0xFF1AC9A3),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6 * scale),
                             Text(
                               q.type == "fib" ? "FILL" : q.type == "mcq" ? "MCQ" : "T/F",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12 * scale,
                                 fontWeight: FontWeight.bold,
                                 color: q.type == "fib"
                                     ? const Color(0xFFFF9800)
@@ -156,14 +168,13 @@ class OnlineTestView extends GetView<OnlineTestController> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // DYNAMIC MARKS FROM QUESTION
+                      SizedBox(width: 12 * scale),
                       Text(
                         "${q.marks} marks",
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: 14 * scale,
                           fontWeight: FontWeight.w700,
-                          color: Color.fromARGB(255, 17, 170, 137),
+                          color: const Color.fromARGB(255, 17, 170, 137),
                         ),
                       ),
                     ],
@@ -186,22 +197,21 @@ class OnlineTestView extends GetView<OnlineTestController> {
                     Container(
                       width: double.infinity,
                       color: const Color.fromARGB(255, 252, 252, 252),
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                      padding: EdgeInsets.fromLTRB(20 * scale, 24 * scale, 20 * scale, 24 * scale),
                       child: q.type == "fib"
-                          ? _buildFibQuestion(q.text)
+                          ? _buildFibQuestion(q.text, scale)
                           : Text(q.text,
-                              style: const TextStyle(fontSize: 18, height: 1.6, fontWeight: FontWeight.w500, color: Colors.black87)),
+                              style: TextStyle(
+                                  fontSize: 18 * scale, height: 1.6, fontWeight: FontWeight.w500, color: Colors.black87)),
                     ),
-
                     Container(height: 1, color: Colors.grey[350]),
-
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(20 * scale),
                       child: q.type == "fib"
-                          ? _buildFibInput(userAnswer?.toString() ?? "")
+                          ? _buildFibInput(userAnswer?.toString() ?? "", scale)
                           : q.type == "true_false"
-                              ? _buildTrueFalseOptions(userAnswer)
-                              : _buildMcqOptions(q.options, userAnswer),
+                              ? _buildTrueFalseOptions(userAnswer, scale)
+                              : _buildMcqOptions(q.options, userAnswer, scale),
                     ),
                   ],
                 );
@@ -211,7 +221,7 @@ class OnlineTestView extends GetView<OnlineTestController> {
 
           // Bottom Panel
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12 * scale),
             decoration: const BoxDecoration(
               color: Colors.white,
               boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
@@ -221,79 +231,80 @@ class OnlineTestView extends GetView<OnlineTestController> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Questions',
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color.fromARGB(255, 10, 119, 106))),
+                    Text('Questions',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15 * scale,
+                            color: const Color.fromARGB(255, 10, 119, 106))),
                     Obx(() => Text('${controller.answeredCount}/${controller.totalQuestions} answered',
-                        style: const TextStyle(fontSize: 13))),
+                        style: TextStyle(fontSize: 13 * scale))),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8 * scale),
 
                 // Question Palette
                 SizedBox(
-                  height: 50,
+                  height: 50 * scale,
                   child: Obx(() => SingleChildScrollView(
-                    controller: controller.paletteScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: List.generate(controller.totalQuestions.value, (i) {
-                        final answer = controller.userAnswers[i];
-                        final isAnswered = answer != null &&
-                            (controller.allQuestions[i].type == "fib"
-                                ? (answer as String).trim().isNotEmpty
-                                : true);
-                        final isCurrent = i == controller.currentIndex.value;
-                        final isReviewed = controller.reviewList.contains(i);
+                        controller: controller.paletteScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(controller.totalQuestions.value, (i) {
+                            final answer = controller.userAnswers[i];
+                            final isAnswered = answer != null &&
+                                (controller.allQuestions[i].type == "fib"
+                                    ? (answer as String).trim().isNotEmpty
+                                    : true);
+                            final isCurrent = i == controller.currentIndex.value;
+                            final isReviewed = controller.reviewList.contains(i);
 
-                        Color bg = Colors.grey[300]!;
-                        Color txt = Colors.grey[700]!;
+                            Color bg = Colors.grey[300]!;
+                            Color txt = Colors.grey[700]!;
 
-                        if (isCurrent) {
-                          bg = Colors.black;
-                          txt = Colors.white;
-                        } else if (isReviewed) {
-                          bg = Colors.orange.shade600;
-                          txt = Colors.white;
-                        } else if (isAnswered) {
-                          bg = const Color.fromARGB(255, 31, 126, 83);
-                          txt = Colors.white;
-                        }
+                            if (isCurrent) {
+                              bg = Colors.black;
+                              txt = Colors.white;
+                            } else if (isReviewed) {
+                              bg = Colors.orange.shade600;
+                              txt = Colors.white;
+                            } else if (isAnswered) {
+                              bg = const Color.fromARGB(255, 31, 126, 83);
+                              txt = Colors.white;
+                            }
 
-                        return GestureDetector(
-                          onTap: () => controller.goToQuestion(i),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 6),
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: bg,
-                              borderRadius: BorderRadius.circular(8),
-                              border: isCurrent ? Border.all(color: Colors.white, width: 3) : null,
-                            ),
-                            child: Center(
-                              child: Text('${i + 1}',
-                                  style: TextStyle(color: txt, fontWeight: FontWeight.bold, fontSize: 14)),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  )),
+                            return GestureDetector(
+                              onTap: () => controller.goToQuestion(i),
+                              child: Container(
+                                margin: EdgeInsets.only(right: 6 * scale),
+                                width: 34 * scale,
+                                height: 34 * scale,
+                                decoration: BoxDecoration(
+                                  color: bg,
+                                  borderRadius: BorderRadius.circular(8 * scale),
+                                  border: isCurrent ? Border.all(color: Colors.white, width: 3) : null,
+                                ),
+                                child: Center(
+                                  child: Text('${i + 1}',
+                                      style: TextStyle(color: txt, fontWeight: FontWeight.bold, fontSize: 14 * scale)),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      )),
                 ),
-
-                const SizedBox(height: 8),
+                SizedBox(height: 8 * scale),
 
                 Row(
                   children: [
-                    _legendItem(Icons.square, Colors.green.shade700, "Answered"),
-                    const SizedBox(width: 16),
-                    _legendItem(Icons.square, Colors.black, "Current"),
-                    const SizedBox(width: 16),
-                    _legendItem(Icons.square, Colors.orange.shade600, "Review"),
+                    _legendItem(Icons.square, Colors.green.shade700, "Answered", scale),
+                    SizedBox(width: 16 * scale),
+                    _legendItem(Icons.square, Colors.black, "Current", scale),
+                    SizedBox(width: 16 * scale),
+                    _legendItem(Icons.square, Colors.orange.shade600, "Review", scale),
                   ],
                 ),
-
-                const SizedBox(height: 40),
+                SizedBox(height: 40 * scale),
 
                 // Buttons
                 Obx(() {
@@ -301,75 +312,79 @@ class OnlineTestView extends GetView<OnlineTestController> {
 
                   return Row(
                     children: [
+                      // Previous
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: controller.isFirstQuestion ? null : controller.goToPrevious,
-                          icon: const Icon(Icons.arrow_back_ios_new, size: 16),
-                          label: const Text("Previous"),
+                          icon: Icon(Icons.arrow_back_ios_new, size: 15 * scale),
+                          label: Text("Previous", style: TextStyle(fontSize: 13 * scale)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.grey[800],
-                            padding: const EdgeInsets.symmetric(vertical: 11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            padding: EdgeInsets.symmetric(vertical: 11 * scale),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5 * scale)),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8 * scale),
+
+                      // Review (always label "Review")
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: controller.toggleReview,
                           icon: Icon(Icons.bookmark_border,
-                              size: 20,
+                              size: 20 * scale,
                               color: controller.reviewList.contains(controller.currentIndex.value)
                                   ? Colors.orange.shade700
                                   : Colors.orange[700]),
-                          label: Text(
-                            controller.reviewList.contains(controller.currentIndex.value) ? "Reviewed" : "Review",
-                          ),
+                          label: Text("Review", style: TextStyle(fontSize: 12 * scale)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: controller.reviewList.contains(controller.currentIndex.value)
                                 ? Colors.orange.shade100
                                 : const Color.fromARGB(255, 255, 241, 219),
                             foregroundColor: Colors.orange[800],
-                            side: BorderSide(color: Colors.orange[700]!, width: 1.8),
-                            padding: const EdgeInsets.symmetric(vertical:11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            side: BorderSide(color: Colors.orange[700]!, width: 1.8 * scale),
+                            padding: EdgeInsets.symmetric(vertical: 11 * scale),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5 * scale)),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8 * scale),
+
+                      // Next
                       Expanded(
                         child: ElevatedButton(
                           onPressed: isLast ? null : controller.goToNext,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color.fromARGB(255, 5, 35, 9),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical:11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            padding: EdgeInsets.symmetric(vertical: 11 * scale),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5 * scale)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("Next"),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_ios, size: 16),
+                              Text("Next", style: TextStyle(fontSize: 14 * scale)),
+                              SizedBox(width: 8 * scale),
+                              Icon(Icons.arrow_forward_ios, size: 16 * scale),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8 * scale),
+
+                      // Submit
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () => controller.submitTest(),
-                          icon: const Icon(Icons.send, size: 18, color: Colors.white),
-                          label: const Text("Submit",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.send, size: 16 * scale, color: Colors.white),
+                          label: Text("Submit",
+                              style: TextStyle(fontSize: 14 * scale, fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF17A8A3),
                             foregroundColor: Colors.white,
-                            elevation: 6,
-                            padding: const EdgeInsets.symmetric(vertical:11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                            padding: EdgeInsets.symmetric(vertical: 11 * scale),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5 * scale)),
                           ),
                         ),
                       ),
@@ -385,19 +400,19 @@ class OnlineTestView extends GetView<OnlineTestController> {
   }
 
   // FIB Question
-  Widget _buildFibQuestion(String text) {
+  Widget _buildFibQuestion(String text, double scale) {
     final parts = text.split('______');
     return RichText(
       text: TextSpan(
-        style: const TextStyle(fontSize: 18, height: 1.6, color: Colors.black87),
+        style: TextStyle(fontSize: 18 * scale, height: 1.6, color: Colors.black87),
         children: [
           TextSpan(text: parts[0]),
           if (parts.length > 1)
-            const WidgetSpan(
+            WidgetSpan(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10 * scale),
                 child: Text('______',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                    style: TextStyle(fontSize: 24 * scale, fontWeight: FontWeight.bold, color: Colors.black87)),
               ),
             ),
           if (parts.length > 1) TextSpan(text: parts[1]),
@@ -407,31 +422,37 @@ class OnlineTestView extends GetView<OnlineTestController> {
   }
 
   // FIB Input
-  Widget _buildFibInput(String currentText) {
+  Widget _buildFibInput(String currentText, double scale) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: EdgeInsets.symmetric(vertical: 20 * scale),
       child: TextField(
         controller: TextEditingController(text: currentText)
           ..selection = TextSelection.fromPosition(TextPosition(offset: currentText.length)),
         onChanged: controller.answerFib,
         decoration: InputDecoration(
           hintText: "Type your answer here...",
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFF9800), width: 2)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFF9800), width: 2)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFF9800), width: 3)),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12 * scale),
+              borderSide: BorderSide(color: const Color(0xFFFF9800), width: 2 * scale)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12 * scale),
+              borderSide: BorderSide(color: const Color(0xFFFF9800), width: 2 * scale)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12 * scale),
+              borderSide: BorderSide(color: const Color(0xFFFF9800), width: 3 * scale)),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 18 * scale),
         ),
-        style: const TextStyle(fontSize: 17),
+        style: TextStyle(fontSize: 17 * scale),
       ),
     );
   }
 
   // True/False Options
-  Widget _buildTrueFalseOptions(dynamic selected) {
+  Widget _buildTrueFalseOptions(dynamic selected, double scale) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: EdgeInsets.symmetric(vertical: 20 * scale),
       child: Row(
         children: List.generate(2, (i) {
           final isSel = selected == i;
@@ -439,19 +460,30 @@ class OnlineTestView extends GetView<OnlineTestController> {
             child: GestureDetector(
               onTap: () => controller.selectOption(i),
               child: Container(
-                margin: EdgeInsets.only(right: i == 0 ? 12 : 0),
-                height: 60,
+                margin: EdgeInsets.only(right: i == 0 ? 12 * scale : 0),
+                height: 60 * scale,
                 decoration: BoxDecoration(
                   color: isSel ? const Color(0xFFE8F5E8) : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isSel ? const Color(0xFF4CAF50) : Colors.grey.shade300, width: isSel ? 2 : 1.5),
+                  borderRadius: BorderRadius.circular(12 * scale),
+                  border: Border.all(
+                      color: isSel ? const Color(0xFF4CAF50) : Colors.grey.shade300,
+                      width: isSel ? 2 * scale : 1.5 * scale),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Radio(value: i, groupValue: selected, onChanged: (_) => controller.selectOption(i), activeColor: const Color(0xFF4CAF50)),
-                    Text(["True", "False"][i],
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isSel ? const Color(0xFF2E7D32) : Colors.black87)),
+                    Radio(
+                        value: i,
+                        groupValue: selected,
+                        onChanged: (_) => controller.selectOption(i),
+                        activeColor: const Color(0xFF4CAF50)),
+                    Text(
+                      ["True", "False"][i],
+                      style: TextStyle(
+                          fontSize: 18 * scale,
+                          fontWeight: FontWeight.bold,
+                          color: isSel ? const Color(0xFF2E7D32) : Colors.black87),
+                    ),
                   ],
                 ),
               ),
@@ -463,39 +495,43 @@ class OnlineTestView extends GetView<OnlineTestController> {
   }
 
   // MCQ Options
-  Widget _buildMcqOptions(List<String> options, dynamic selected) {
+  Widget _buildMcqOptions(List<String> options, dynamic selected, double scale) {
     return Column(
       children: List.generate(options.length, (i) {
         final isSel = selected == i;
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7),
+          padding: EdgeInsets.symmetric(vertical: 7 * scale),
           child: InkWell(
             onTap: () => controller.selectOption(i),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12 * scale),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10 * scale),
               decoration: BoxDecoration(
                 color: isSel ? const Color.fromARGB(255, 244, 255, 244) : Colors.white,
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(color: isSel ? const Color.fromARGB(255, 6, 57, 8) : Colors.grey.shade300, width: isSel ? 2.5 : 1.5),
+                borderRadius: BorderRadius.circular(9 * scale),
+                border: Border.all(
+                    color: isSel ? const Color.fromARGB(255, 6, 57, 8) : Colors.grey.shade300,
+                    width: isSel ? 2.5 * scale : 1.5 * scale),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 30,
-                    height: 30,
+                    width: 30 * scale,
+                    height: 30 * scale,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isSel ? const Color.fromARGB(255, 6, 57, 8) : Colors.transparent,
-                      border: Border.all(color: isSel ? const Color.fromARGB(255, 6, 57, 8) : Colors.grey.shade500, width: 2),
+                      border: Border.all(
+                          color: isSel ? const Color.fromARGB(255, 6, 57, 8) : Colors.grey.shade500,
+                          width: 2 * scale),
                     ),
                     child: Center(
                       child: Text(String.fromCharCode(65 + i),
                           style: TextStyle(color: isSel ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(child: Text(options[i], style: const TextStyle(fontSize: 16.5))),
+                  SizedBox(width: 16 * scale),
+                  Expanded(child: Text(options[i], style: TextStyle(fontSize: 16.5 * scale))),
                 ],
               ),
             ),
@@ -505,12 +541,12 @@ class OnlineTestView extends GetView<OnlineTestController> {
     );
   }
 
-  Widget _legendItem(IconData icon, Color color, String label) {
+  Widget _legendItem(IconData icon, Color color, String label, double scale) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 12),
-        const SizedBox(width: 6),
-        Text(label, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+        Icon(icon, color: color, size: 12 * scale),
+        SizedBox(width: 6 * scale),
+        Text(label, style: TextStyle(fontSize: 12 * scale, color: color, fontWeight: FontWeight.w600)),
       ],
     );
   }

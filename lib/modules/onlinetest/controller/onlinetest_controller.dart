@@ -191,13 +191,11 @@ class OnlineTestController extends GetxController {
   () => Question(text: "Largest planet in the solar system is ______", correctAnswer: "jupiter", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Number of bones in an adult human body is ______", correctAnswer: "206", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Chemical symbol for Water is ______", correctAnswer: "h2o", type: "fib", marks: fibMarksPerQ),
-  () => Question(text: "Inventor of the telephone is ______", correctAnswer: "alexander graham bell", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Smallest prime number is ______", correctAnswer: "2", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Currency of Japan is ______", correctAnswer: "yen", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Longest river in the world is ______", correctAnswer: "nile", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Atomic number of Carbon is ______", correctAnswer: "6", type: "fib", marks: fibMarksPerQ),
   () => Question(text: "Planet closest to the Sun is ______", correctAnswer: "mercury", type: "fib", marks: fibMarksPerQ),
-  () => Question(text: "E = mc² was proposed by ______", correctAnswer: "albert einstein", type: "fib", marks: fibMarksPerQ),
 ];
     return List.generate(100, (_) => templates[random.nextInt(templates.length)]());
   }

@@ -14,6 +14,9 @@ class AddStudyMaterialView extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     final isWide = width > 720;
     final horizontalPadding = isWide ? width * 0.14 : 16.0;
+    final verticalSpacing = 10.0;
+    final iconSize = 26.0;
+    final textSize = 13.0;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -42,7 +45,7 @@ class AddStudyMaterialView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Drop area (mock) + Add file buttons
+                    // Drop area (mock)
                     GestureDetector(
                       onTap: () => ctrl.addMockFile(
                         name: 'calculus_textbook.pdf',
@@ -111,7 +114,7 @@ class AddStudyMaterialView extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Files list (if any)
+                    // Files list
                     Obx(() {
                       if (ctrl.files.isEmpty) return const SizedBox.shrink();
                       return Column(
@@ -217,29 +220,38 @@ class AddStudyMaterialView extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 10),
+
+                    // Responsive Cover buttons
                     Row(
                       children: [
-                        _CoverAction(
-                          icon: Icons.camera_alt_rounded,
-                          label: 'Take Photo',
-                          onTap: () => ctrl.openCoverPicker(context),
+                        Expanded(
+                          child: _CoverAction(
+                            icon: Icons.camera_alt_rounded,
+                            label: 'Take Photo',
+                            onTap: () => ctrl.openCoverPicker(context),
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        _CoverAction(
-                          icon: Icons.photo_library_rounded,
-                          label: 'From Gallery',
-                          onTap: () => ctrl.openCoverPicker(context),
+                        SizedBox(width: verticalSpacing),
+                        Expanded(
+                          child: _CoverAction(
+                            icon: Icons.photo_library_rounded,
+                            label: 'From Gallery',
+                            onTap: () => ctrl.openCoverPicker(context),
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        _CoverAction(
-                          icon: Icons.crop_square_rounded,
-                          label: 'Default',
-                          onTap: () => ctrl.openCoverPicker(context),
+                        SizedBox(width: verticalSpacing),
+                        Expanded(
+                          child: _CoverAction(
+                            icon: Icons.crop_square_rounded,
+                            label: 'Default',
+                            onTap: () => ctrl.openCoverPicker(context),
+                          ),
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 12),
+
                     Obx(() {
                       final path = ctrl.coverImagePath.value;
                       return Container(
@@ -271,17 +283,15 @@ class AddStudyMaterialView extends StatelessWidget {
 
                     const SizedBox(height: 18),
 
-                    // Basic Information heading
+                    // Basic Information
                     const Text(
                       'Basic Information',
                       style: AppTextStyles.labelfield,
                     ),
                     const SizedBox(height: 10),
 
-                    // Title field
                     TextFormField(
                       controller: ctrl.titleCtrl,
-
                       decoration: InputDecoration(
                         hintText: 'Enter Resource title',
                         hintStyle: const TextStyle(color: Colors.grey),
@@ -304,11 +314,9 @@ class AddStudyMaterialView extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Description field
                     TextFormField(
                       controller: ctrl.descCtrl,
                       maxLines: 3,
-
                       decoration: InputDecoration(
                         hintText: 'Brief description of the book content',
                         hintStyle: const TextStyle(color: Colors.grey),
@@ -348,9 +356,8 @@ class AddStudyMaterialView extends StatelessWidget {
                                     ),
                                   )
                                   .toList(),
-                              onChanged: (v) => ctrl.language.value =
-                                  v ?? ctrl.language.value,
-
+                              onChanged: (v) =>
+                                  ctrl.language.value = v ?? ctrl.language.value,
                               decoration: InputDecoration(
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -385,8 +392,8 @@ class AddStudyMaterialView extends StatelessWidget {
                                     ),
                                   )
                                   .toList(),
-                              onChanged: (v) => ctrl.category.value =
-                                  v ?? ctrl.category.value,
+                              onChanged: (v) =>
+                                  ctrl.category.value = v ?? ctrl.category.value,
                               decoration: InputDecoration(
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -431,23 +438,13 @@ class AddStudyMaterialView extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // Obx(
-                        //   () => Switch(
-                        //     value: ctrl.isPublic.value,
-                        //     onChanged: (v) => ctrl.isPublic.value = v,
-                        //   ),
-                        // ),
                         Obx(
                           () => Switch(
                             value: ctrl.isPublic.value,
                             onChanged: (v) => ctrl.isPublic.value = v,
-                            activeTrackColor:
-                                AppColors.gradientStart, // track color when ON
-                            inactiveThumbColor:
-                                Colors.grey.shade300, // thumb color when OFF
-                            inactiveTrackColor:
-                                Colors.grey.shade200, // track color when OFF
+                            activeTrackColor: AppColors.gradientStart,
+                            inactiveThumbColor: Colors.grey.shade300,
+                            inactiveTrackColor: Colors.grey.shade200,
                           ),
                         ),
                       ],
@@ -482,9 +479,7 @@ class AddStudyMaterialView extends StatelessWidget {
 
                     const SizedBox(height: 18),
 
-                    // -------------------------------
-                    // Upload Resource button (last item - submit)
-                    // -------------------------------
+                    // Upload Resource button
                     Obx(() {
                       return SizedBox(
                         width: double.infinity,
@@ -510,9 +505,7 @@ class AddStudyMaterialView extends StatelessWidget {
                       );
                     }),
 
-                    const SizedBox(
-                      height: 32,
-                    ), // bottom spacing so last element isn't glued to bottom
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -528,6 +521,7 @@ class _CoverAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+
   const _CoverAction({
     required this.icon,
     required this.label,
@@ -539,7 +533,7 @@ class _CoverAction extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 96,
+        width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
           color: Colors.white,

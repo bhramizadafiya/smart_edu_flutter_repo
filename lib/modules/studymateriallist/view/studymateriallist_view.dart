@@ -1087,7 +1087,8 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
             // Search bar
             // Inside StudyMaterialListView build method, replace the search Container with:
 
- Container(
+ // Search Bar
+Container(
   padding: EdgeInsets.symmetric(horizontal: width * 0.04),
   decoration: BoxDecoration(
     color: Colors.grey.shade100,
@@ -1099,7 +1100,8 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
       SizedBox(width: width * 0.03),
       Expanded(
         child: TextField(
-          onChanged: controller.onSearchChanged, // This triggers filtering
+          controller: controller.searchController,
+          onChanged: controller.onSearchChanged, // triggers filtering
           decoration: const InputDecoration(
             hintText: "Search books, authors, subjects...",
             border: InputBorder.none,
@@ -1111,9 +1113,8 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
       Obx(() => controller.searchQuery.value.isNotEmpty
           ? GestureDetector(
               onTap: () {
-                controller.clearSearch();
-                // Optional: unfocus keyboard
-                FocusScope.of(context).unfocus();
+                controller.clearSearch(); // clears text & resets list
+                FocusScope.of(context).unfocus(); // hide keyboard
               },
               child: const Icon(Icons.clear, color: Colors.grey),
             )
@@ -1122,10 +1123,9 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
   ),
 ),
 SizedBox(height: height * 0.02),
-  
 
-            // Resource list
-         Obx(() => controller.filteredMaterials.isEmpty
+// Resource list
+Obx(() => controller.filteredMaterials.isEmpty
     ? Padding(
         padding: EdgeInsets.symmetric(vertical: height * 0.1),
         child: Center(
@@ -1146,6 +1146,7 @@ SizedBox(height: height * 0.02),
             .toList(),
       ),
 ),
+
           ],
         ),
       ),
