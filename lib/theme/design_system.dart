@@ -6,7 +6,7 @@ class AppColors {
   static const Color gradientStart = Color(0xFF66D1B2); // Light Mint Green
   static const Color gradientMiddle = Color(0xFF3BAA8F); // Medium Teal
   static const Color gradientEnd = Color(0xFF1C524A); // Deep Green Teal
-
+  
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.white70;
 
@@ -21,6 +21,8 @@ class AppColors {
   static const Color gradientStartBlue   = Color(0xFF2E88FF); // Bright dark-blue 
   static const Color gradientMiddleBlue  = Color(0xFF1B6BE0); // Rich mid-blue
   static const Color gradientEndBlue     = Color(0xFF0D47A1); // Very deep blue 
+
+  static const Color greenbutton = Color.fromARGB(255, 20, 146, 115);
 
 
 }

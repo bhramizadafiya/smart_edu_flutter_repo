@@ -299,6 +299,8 @@ import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:smarted/modules/onpapertest/binding/onpapertest_binding.dart';
 import 'package:smarted/modules/onpapertest/view/onpapertest_view.dart';
+import 'package:smarted/modules/previewtemplate/binding/previewtemplate_binding.dart';
+import 'package:smarted/modules/previewtemplate/view/previewtemplate_view.dart';
 import 'package:smarted/modules/testresult/binding/testresult_binding.dart';
 import 'package:smarted/modules/testresult/view/testresult_view.dart';
 import 'package:smarted/modules/viewsolutions/binding/viewsolutions_binding.dart';
@@ -528,6 +530,11 @@ void main() async {
   name: '/onpapertest',
   page: () => const OnTestPaperView(),
   binding: OnTestPaperBinding(),
+),
+GetPage(
+  name: '/previewtemplate',
+  page: () => const PreviewTemplateView(),
+  binding: PreviewTemplateBinding(),
 ),
       ],
     ),

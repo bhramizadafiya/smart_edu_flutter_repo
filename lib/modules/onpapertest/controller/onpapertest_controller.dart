@@ -7,20 +7,17 @@ class OnTestPaperController extends GetxController {
   // Uploaded file state
   var uploadedFileName = ''.obs;
   var uploadedFileSize = ''.obs;
+  var uploadedFilePath = ''.obs;        // ← Added
+  var uploadedFileExtension = ''.obs;   // ← Added
   var isFileUploaded = false.obs;
+
+  final promptFocusNode = FocusNode();
 
   // Selected pre-built template
   var selectedTemplate = 'Standard'.obs;
 
   // Text controller for AI Custom Prompt
   final TextEditingController promptController = TextEditingController();
-
-  // List of pre-built templates (for future dynamic use if needed)
-  final List<Map<String, dynamic>> prebuiltTemplates = [
-    {'name': 'Standard', 'icon': Icons.description_outlined},
-    {'name': 'Grid Layout', 'icon': Icons.grid_on},
-    {'name': 'Compact', 'icon': Icons.compress},
-  ];
 
   // ==================== PAPER SETTINGS STATE ====================
   var selectedPaperSize = 'A4 (210 × 297 mm)'.obs;
@@ -42,22 +39,19 @@ class OnTestPaperController extends GetxController {
     // Simulate uploaded file (as seen in your desired screenshot)
     uploadedFileName.value = 'my_test_template.pdf';
     uploadedFileSize.value = '2.1 MB';
+    uploadedFilePath.value = '/path/to/my_test_template.pdf'; // dummy path for simulation
+    uploadedFileExtension.value = 'pdf';
     isFileUploaded.value = true;
 
     // Pre-fill the AI prompt with a realistic example
     promptController.text =
-        'Generate a Class 10 Mathematics test paper with:\n'
-        '• 20 Multiple Choice Questions (Section A)\n'
-        '• 10 Short Answer Questions (Section B)\n'
-        '• 5 Long Answer Questions (Section C)\n'
-        'Include space for student name, roll number, and school logo at the top.\n'
-        'Total marks: 80, Duration: 3 hours.\n'
-        'Follow CBSE 2024-25 pattern with clear instructions.';
+        'Generate a mathematics test paper with 25 MCQs and 5 short answer questions. Include space for student details at the top, clear instructions, and proper answer sheet format. Use standard CBSE pattern with 3 hours duration.';
   }
 
   @override
   void onClose() {
     promptController.dispose();
+    promptFocusNode.dispose();
     super.onClose();
   }
 
@@ -96,6 +90,8 @@ class OnTestPaperController extends GetxController {
       }
 
       uploadedFileName.value = result.files.single.name;
+      uploadedFilePath.value = result.files.single.path!;           // ← Save path
+      uploadedFileExtension.value = result.files.single.extension ?? ''; // ← Save extension
       uploadedFileSize.value = '${sizeInMb.toStringAsFixed(1)} MB';
       isFileUploaded.value = true;
 
@@ -113,6 +109,8 @@ class OnTestPaperController extends GetxController {
     isFileUploaded.value = false;
     uploadedFileName.value = '';
     uploadedFileSize.value = '';
+    uploadedFilePath.value = '';           // ← Clear path
+    uploadedFileExtension.value = '';      // ← Clear extension
 
     Get.snackbar(
       'Removed',
@@ -122,20 +120,25 @@ class OnTestPaperController extends GetxController {
     );
   }
 
-  // Preview template (placeholder)
+  // Preview template
   void previewTemplate() {
-    if (!isFileUploaded.value && selectedTemplate.value == 'Standard') {
-      Get.snackbar('No Template', 'Upload a template or select a pre-built one first');
-      return;
-    }
-
-    Get.snackbar(
-      'Preview',
-      'Previewing ${isFileUploaded.value ? 'uploaded' : selectedTemplate.value} template...',
-      duration: const Duration(seconds: 2),
-    );
-    // TODO: Implement actual PDF preview (e.g., using syncfusion_flutter_pdfviewer)
+  if (!isFileUploaded.value || uploadedFilePath.value.isEmpty) {
+    Get.snackbar('No File', 'Please upload a template first',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white);
+    return;
   }
+
+  Get.toNamed(
+    '/previewtemplate', // Must match route name exactly
+    arguments: {
+      'filePath': uploadedFilePath.value,
+      'fileName': uploadedFileName.value,
+      'extension': uploadedFileExtension.value.toLowerCase(),
+    },
+  );
+}
 
   // Final generate paper action
   void finalizeGeneratePaper() {
@@ -161,14 +164,10 @@ class OnTestPaperController extends GetxController {
         icon: const Icon(Icons.download_done, color: Colors.white),
         duration: const Duration(seconds: 4),
       );
-
-      // Here you would integrate actual PDF generation logic
-      // e.g., using pdf package, syncfusion, or backend API call
     });
   }
 
   // ==================== PAPER SETTINGS METHODS ====================
-
   void toggleOrientation(bool portrait) {
     isPortrait.value = portrait;
   }
@@ -181,7 +180,7 @@ class OnTestPaperController extends GetxController {
     addLogo.value = value;
   }
 
-  // New preview function for "Preview Before Generate" button
+  // Preview before generate (placeholder)
   void previewBeforeGenerate() {
     Get.snackbar(
       'Preview',
@@ -190,6 +189,5 @@ class OnTestPaperController extends GetxController {
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
     );
-    // TODO: Implement actual preview (e.g., generate temporary PDF and show in viewer)
   }
 }
