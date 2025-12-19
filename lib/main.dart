@@ -297,8 +297,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:smarted/modules/answerkey/binding/answerkey_binding.dart';
+import 'package:smarted/modules/answerkey/view/answerkey_view.dart';
 import 'package:smarted/modules/onpapertest/binding/onpapertest_binding.dart';
 import 'package:smarted/modules/onpapertest/view/onpapertest_view.dart';
+import 'package:smarted/modules/papertestpreview/binding/papertestpreview_binding.dart';
+import 'package:smarted/modules/papertestpreview/view/papertestpreview_view.dart';
 import 'package:smarted/modules/previewtemplate/binding/previewtemplate_binding.dart';
 import 'package:smarted/modules/previewtemplate/view/previewtemplate_view.dart';
 import 'package:smarted/modules/testresult/binding/testresult_binding.dart';
@@ -535,6 +539,16 @@ GetPage(
   name: '/previewtemplate',
   page: () => const PreviewTemplateView(),
   binding: PreviewTemplateBinding(),
+),
+GetPage(
+  name: '/papertestpreview',
+  page: () => const PaperTestPreviewView(),
+  binding: PaperTestPreviewBinding(),
+),
+GetPage(
+  name: '/answerkey',
+  page: () => const AnswerKeyView(),
+  binding: AnswerKeyBinding(),
 ),
       ],
     ),

@@ -547,11 +547,11 @@ Row(
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 )),
-                            Icon(
-                              Icons.keyboard_arrow_down,
-                              size: 20,
-                              color: Colors.grey.shade600,
-                            ),
+                            // Icon(
+                            //   Icons.keyboard_arrow_down,
+                            //   size: 20,
+                            //   color: Colors.grey.shade600,
+                            // ),
                           ],
                         ),
                       ),
@@ -725,9 +725,10 @@ Row(
           value: value,
           onChanged: onChanged,
           activeColor: Colors.white,
-          activeTrackColor: Colors.grey.shade400,       // Light grey when ON (right)
+          activeTrackColor: AppColors.greenbutton,       // Light grey when ON (right)
           inactiveThumbColor: Colors.white,
-          inactiveTrackColor: AppColors.greenbutton,  // Dark green when OFF (left)
+          inactiveTrackColor: Colors.grey.shade400,
+          // inactiveTrackColor: AppColors.greenbutton,  // Dark green when OFF (left)
           trackOutlineColor: const MaterialStatePropertyAll(Colors.transparent),
           trackOutlineWidth: MaterialStateProperty.all(0),
         ),
@@ -844,4 +845,289 @@ Row(
   );
 }
 
+}
+
+
+class DownloadOptionsModal extends StatelessWidget {
+  const DownloadOptionsModal({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<OnTestPaperController>();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          const Text(
+            'Download Options',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 2x2 Grid with Proper Card Height
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1, // Perfect height for your design
+            children: controller.downloadOptions.map((option) {
+              return _buildDownloadCard(option);
+            }).toList(),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Bottom Text
+          const Center(
+            child: Text(
+              'All files will be downloaded to your device. Print on A4 paper for best results.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDownloadCard(DownloadOption option) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: option.backgroundColor,
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(
+        color: option.buttonColor,
+        width: 1,
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Title, Subtitle, Size - Same color as border (individual)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              option.title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: option.buttonColor.withOpacity(0.9),
+              ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              option.subtitle,
+              style: TextStyle(
+                fontSize: 13,
+                color: option.buttonColor.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              option.size,
+              style: TextStyle(
+                fontSize: 13,
+                color: option.buttonColor.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Centered Button - Individual opacity
+        Center(
+          child: SizedBox(
+            height: 36,
+            width: 80,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Get.back();
+                option.onTap();
+              },
+              icon: const Icon(Icons.download, size: 16),
+              label: Text(
+                option.buttonText,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: option.buttonColor.withOpacity(option.buttonOpacity), // Individual opacity
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+}
+
+
+class DownloadProgressModal extends StatelessWidget {
+  final String fileName;
+  final double progress; // 0.0 to 1.0
+  final String downloadedSize;
+  final String totalSize;
+  final VoidCallback onCancel;
+
+  const DownloadProgressModal({
+    Key? key,
+    required this.fileName,
+    required this.progress,
+    required this.downloadedSize,
+    required this.totalSize,
+    required this.onCancel,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Compact White Card (same as DownloadModal)
+        Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Smaller Download Icon (green circle)
+              Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9), // Light green background
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.download, // Changed to match your DownloadModal
+                  color: AppColors.greenbutton, // Use your app's green
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Title - Green color
+              Text(
+                'Downloading...',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.greenbutton,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Progress Bar - Thinner, green
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation(AppColors.greenbutton),
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              const SizedBox(height: 12),
+
+              // File Name - Left aligned, very close to left edge
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    fileName,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Progress Percentage - Centered
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppColors.greenbutton,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // Size Info - Centered
+              Text(
+                '$downloadedSize MB of $totalSize MB',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Cancel Button - Outside the card (same style)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onCancel,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade200,
+                foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+      ],
+    );
+  }
 }
