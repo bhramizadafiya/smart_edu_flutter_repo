@@ -281,28 +281,47 @@ class ActivityItem {
   });
 }
 
+// models/standard_item.dart
+// models/standard_item.dart
 class StandardItem {
   final String title;
   final String subtitle;
+  final String secondSubtitle;
   final int badge;
   final String progress;
+  final String streamText;
+  final IconData streamIcon; // Required – no null allowed
+
   StandardItem({
     required this.title,
     required this.subtitle,
+    required this.secondSubtitle,
     required this.badge,
     required this.progress,
+    required this.streamText,
+    required this.streamIcon,
   });
 }
 
+// models/exam_item.dart
 class ExamItem {
   final String code;
   final String title;
   final String subtitle;
-  final String difficulty;
+  final String subjectsIcon;     // Short: "PCM", "PCB", "Multiple"
+  final String subjects;         // Full: "Physics, Chemistry, Mathematics"
+  final String duration;         // "2 Years", "1 Year"
+  final String accessType;       // "Premium" or "Available"
+  final String difficulty;       // "High", "Medium"
+
   ExamItem({
     required this.code,
     required this.title,
     required this.subtitle,
+    required this.subjectsIcon,
+    required this.subjects,
+    required this.duration,
+    required this.accessType,
     required this.difficulty,
   });
 }
@@ -351,56 +370,118 @@ class DashboardController extends GetxController {
     ),
   ]);
 
-  // Standards
-  final standards = RxList<StandardItem>([
-    StandardItem(
-      title: 'Class 10th',
-      subtitle: 'CBSE Board Preparation',
-      badge: 10,
-      progress: 'In Progress',
-    ),
-    StandardItem(
-      title: 'Class 11th Science',
-      subtitle: 'PCM/PCB Stream',
-      badge: 11,
-      progress: 'Locked',
-    ),
-    StandardItem(
-      title: 'Class 12th Science',
-      subtitle: 'Board Exams & Entrance Prep',
-      badge: 12,
-      progress: 'Advanced',
-    ),
-  ]);
 
+
+// In your DashboardController
+final standards = RxList<StandardItem>([
+  // Class 9th - New!
+  StandardItem(
+    title: 'Class 09th',
+    subtitle: 'CBSE Board Preparation',
+    secondSubtitle: 'Foundation for higher studies',
+    badge: 9,
+    progress: 'In Progress',
+    streamText: '6 Subjects',
+    streamIcon: Icons.menu_book,
+  ),
+
+  // Class 10th
+  StandardItem(
+    title: 'Class 10th',
+    subtitle: 'CBSE Board Preparation',
+    secondSubtitle: 'Foundation for higher studies',
+    badge: 10,
+    progress: 'In Progress',
+    streamText: '6 Subjects',
+    streamIcon: Icons.menu_book,
+  ),
+
+  // Class 11th Science
+  StandardItem(
+    title: 'Class 11th Science',
+    subtitle: 'PCM/PCB Stream',
+    secondSubtitle: 'JEE/NEET foundation preparation',
+    badge: 11,
+    progress: 'Locked',
+    streamText: 'PCM/PCB',
+    streamIcon: Icons.science,
+  ),
+
+  // Class 12th Science
+  StandardItem(
+    title: 'Class 12th Science',
+    subtitle: 'Board Exams & Entrance Prep',
+    secondSubtitle: 'Final year preparation',
+    badge: 12,
+    progress: 'Locked',
+    streamText: 'Advanced',
+    streamIcon: Icons.school,
+  ),
+]);
   // Competitive Exams
-  final exams = RxList<ExamItem>([
-    ExamItem(
-      code: 'JEE',
-      title: 'JEE Main & Advanced',
-      subtitle: 'Engineering Entrance Preparation',
-      difficulty: 'High',
-    ),
-    ExamItem(
-      code: 'NEET',
-      title: 'NEET Medical Entrance',
-      subtitle: 'Medical & Dental Preparation',
-      difficulty: 'High',
-    ),
-    ExamItem(
-      code: 'UGC',
-      title: 'UGC NET',
-      subtitle: 'University Grants Commission',
-      difficulty: 'Medium',
-    ),
-    ExamItem(
-      code: 'GATE',
-      title: 'GATE',
-      subtitle: 'Graduate Aptitude Test',
-      difficulty: 'High',
-    ),
-  ]);
-
+ final exams = RxList<ExamItem>([
+  ExamItem(
+    code: 'JEE',
+    title: 'JEE Main & Advanced',
+    subtitle: 'Engineering Entrance Preparation',
+    subjectsIcon: 'PCM',
+    subjects: 'Physics, Chemistry, Mathematics',
+    duration: '2 Years',
+    accessType: 'Premium',
+    difficulty: 'High',
+  ),
+  ExamItem(
+    code: 'NEET',
+    title: 'NEET Medical Entrance',
+    subtitle: 'Medical & Dental Preparation',
+    subjectsIcon: 'PCB',
+    subjects: 'Physics, Chemistry, Biology',
+    duration: '2 Years',
+    accessType: 'Premium',
+    difficulty: 'High',
+  ),
+  ExamItem(
+    code: 'UGC',
+    title: 'UGC NET',
+    subtitle: 'University Grants Commission',
+    subjectsIcon: 'Multiple',
+    subjects: 'Multiple Subjects',
+    duration: 'Flexible',
+    accessType: 'Available',
+    difficulty: 'Medium',
+  ),
+  ExamItem(
+    code: 'GATE',
+    title: 'GATE',
+    subtitle: 'Graduate Aptitude Test',
+    subjectsIcon: 'Engineering',
+    subjects: 'Engineering Subjects',
+    duration: '1 Year',
+    accessType: 'Premium',
+    difficulty: 'High',
+  ),
+  // Add more if needed
+  ExamItem(
+    code: 'CLAT',
+    title: 'CLAT (Law Entrance)',
+    subtitle: 'Law College Admission Test',
+    subjectsIcon: 'GK',
+    subjects: 'English, GK, Legal Reasoning',
+    duration: '1 Year',
+    accessType: 'Premium',
+    difficulty: 'Medium',
+  ),
+  ExamItem(
+    code: 'CAT',
+    title: 'CAT (MBA Entrance)',
+    subtitle: 'Management Entrance Test',
+    subjectsIcon: 'QA',
+    subjects: 'QA, VARC, DILR sections',
+    duration: '1 Year',
+    accessType: 'Premium',
+    difficulty: 'High',
+  ),
+]);
   // secure storage instance (still used for user_id cleanup)
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
@@ -422,9 +503,23 @@ class DashboardController extends GetxController {
     Get.toNamed('/coresubjects');
   }
 
+  void selectStandard(StandardItem standard) {
+    // Handle navigation or logic when a standard is selected
+    Get.snackbar(
+      "Selected",
+      "${standard.title} selected",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+
+    // Example navigation:
+    // Get.to(() => StandardContentView(standard: standard));
+  }
+
   void openExam(ExamItem exam) {
     Get.snackbar('Exam', exam.title, snackPosition: SnackPosition.BOTTOM);
   }
+
+  
 
   @override
   void onClose() {

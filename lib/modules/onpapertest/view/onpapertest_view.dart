@@ -871,7 +871,7 @@ class DownloadOptionsModal extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: AppColors.greenColor,
             ),
           ),
           const SizedBox(height: 20),

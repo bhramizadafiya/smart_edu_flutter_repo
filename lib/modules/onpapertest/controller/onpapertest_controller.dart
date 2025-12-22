@@ -111,7 +111,7 @@ class OnTestPaperController extends GetxController {
     isFileUploaded.value = true;
 
     promptController.text =
-        'Generate a mathematics test paper with 25 MCQs and 5 short answer questions...';
+        'Generate a mathematics test paper with 25 MCQs and 5 short answer questions. Include space for student details at the top, clear instructions, and proper answer sheet format. Use standard CBSE pattern with 3 hours duration.';
   }
 
   @override

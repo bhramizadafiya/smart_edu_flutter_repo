@@ -297,8 +297,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:smarted/modules/allstandards/binding/allstandards_binding.dart';
+import 'package:smarted/modules/allstandards/view/allstandards_view.dart';
 import 'package:smarted/modules/answerkey/binding/answerkey_binding.dart';
 import 'package:smarted/modules/answerkey/view/answerkey_view.dart';
+import 'package:smarted/modules/morecompetitiveexam/binding/morecompetitiveexam_binding.dart';
+import 'package:smarted/modules/morecompetitiveexam/view/morecompetitiveexam_view.dart';
 import 'package:smarted/modules/onpapertest/binding/onpapertest_binding.dart';
 import 'package:smarted/modules/onpapertest/view/onpapertest_view.dart';
 import 'package:smarted/modules/papertestpreview/binding/papertestpreview_binding.dart';
@@ -550,6 +554,18 @@ GetPage(
   page: () => const AnswerKeyView(),
   binding: AnswerKeyBinding(),
 ),
+// In your routes.dart or main.dart
+GetPage(
+  name: '/morecompetitiveexam',
+  page: () => const MoreCompetitiveExamsView (),
+  binding: MoreCompetitiveExamsBinding(),
+),
+GetPage(
+  name: '/allstandards',
+  page: () => const AllStandardsView (),
+  binding: AllStandardsBinding(),
+),
+
       ],
     ),
   );

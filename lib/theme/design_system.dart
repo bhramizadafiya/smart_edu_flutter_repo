@@ -24,8 +24,31 @@ class AppColors {
 
   static const Color greenbutton = Color.fromARGB(255, 12, 136, 105);
 
+  static const Color gradientRedStart = Color(0xFFFF4D4D); // Light Mint Red
+  static const Color gradientRedMiddle = Color(0xFFE53935); // Medium Red Teal
+  static const Color gradientRedEnd = Color(0xFFC62828);  // Deep Red Teal
+
+
+  static const Color gradientPurpleStart = Color(0xFF8E5AE8); // Light Mint purple
+  static const Color gradientPurpleMiddle = Color(0xFF6A1B9A); // Medium pueple Teal
+  static const Color gradientPurpleEnd = Color(0xFF4A148C);  // Deep Purple Teal
+
+  static const Color gradientOrangeStart = Color(0xFFFFB74D); // Light Mint Orange
+  static const Color gradientOrangeMiddle = Color(0xFFFB8C00); // Medium Orange Teal
+  static const Color gradientOrangeEnd = Color(0xFFEF6C00);   // Deep Orange Teal
+
+  static const Color gradientUgcStart = Color(0xFF9C27B0);
+  static const Color gradientUgcMiddle = Color(0xFF7B1FA2);
+  static const Color gradientUgcEnd = Color(0xFF4A148C);
+
+  // GATE - Warm Orange Gradient
+  static const Color gradientGateStart = Color(0xFFFFCC80);
+  static const Color gradientGateMiddle = Color(0xFFFF8A65);
+  static const Color gradientGateEnd = Color(0xFFEF6C00);
+
 
 }
+
 
 class AppTextStyles {
   static const TextStyle title = TextStyle(
