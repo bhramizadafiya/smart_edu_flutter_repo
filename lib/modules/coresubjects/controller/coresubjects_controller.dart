@@ -14,7 +14,7 @@ class CoreSubjectsController extends GetxController {
   final List<Map<String, dynamic>> coreSubjects = [
     {
       "title": "Mathematics",
-      "subtitle": "Foundation for engineering &\ncompetitive exams",
+      "subtitle": "Foundation for engineering & competitive exams",
       "color": const Color(0xFF1976D2),
       "gradientColors": const [
         Color(0xFF42A5F5),

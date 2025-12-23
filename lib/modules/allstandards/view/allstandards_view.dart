@@ -9,18 +9,21 @@ import '../controller/allstandards_controller.dart';
 class AllStandardsView extends GetView<AllStandardsController> {
   const AllStandardsView({Key? key}) : super(key: key);
 
-  // Gradient for badge circle
   BoxDecoration _getStandardGradient(int badge) {
     switch (badge) {
-      case 9:
+      case 9: // Keep original green gradient for Class 9 (same as previous)
+        return const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.gradientStart, AppColors.gradientMiddle, AppColors.gradientEnd],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+        );
       case 10:
         return const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.gradientStart,
-              AppColors.gradientMiddle,
-              AppColors.gradientEnd,
-            ],
+            colors: [AppColors.gradientStart, AppColors.gradientMiddle, AppColors.gradientEnd],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -29,11 +32,7 @@ class AllStandardsView extends GetView<AllStandardsController> {
       case 11:
         return const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.gradientStartBlue,
-              AppColors.gradientMiddleBlue,
-              AppColors.gradientEndBlue,
-            ],
+            colors: [AppColors.gradientStartBlue, AppColors.gradientMiddleBlue, AppColors.gradientEndBlue],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -42,25 +41,17 @@ class AllStandardsView extends GetView<AllStandardsController> {
       case 12:
         return const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.gradientRedStart,
-              AppColors.gradientRedMiddle,
-              AppColors.gradientRedEnd,
-            ],
+            colors: [AppColors.gradientRedStart, AppColors.gradientRedMiddle, AppColors.gradientRedEnd],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           shape: BoxShape.circle,
         );
       default:
-        return BoxDecoration(
-          color: Colors.grey.shade400,
-          shape: BoxShape.circle,
-        );
+        return BoxDecoration(color: Colors.grey.shade400, shape: BoxShape.circle);
     }
   }
 
-  // Accent color for stream & progress
   Color _getStandardAccentColor(int badge) {
     switch (badge) {
       case 9:
@@ -75,300 +66,341 @@ class AllStandardsView extends GetView<AllStandardsController> {
     }
   }
 
+  Color _getProgressColor(String progress) {
+    if (progress == 'In Progress') return Colors.orange.shade600;
+    if (progress == 'Locked') return Colors.grey.shade600;
+    return Colors.red.shade600; // Completed - dashboard style
+  }
+
+  IconData _getProgressIcon(String progress) {
+    if (progress == 'In Progress') return Icons.whatshot;
+    if (progress == 'Locked') return Icons.lock_outline;
+    return Icons.auto_awesome; // Completed - dashboard style
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Search state
-    final RxBool isSearching = false.obs;
-    final RxString searchQuery = ''.obs;
-    final TextEditingController searchController = TextEditingController();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final bool isMobile = width < 600;
+        final bool isTablet = width >= 600 && width < 1024;
+        final bool isDesktop = width >= 1024;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7FFF9),
-      body: CustomScrollView(
-        slivers: [
-          // AppBar with dynamic search
-          SliverAppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            pinned: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.greenColor),
-              onPressed: () => Get.back(),
-            ),
-            title: Obx(() => isSearching.value
-                ? TextField(
-                    controller: searchController,
-                    autofocus: true,
-                    style: const TextStyle(color: Colors.black87, fontSize: 18),
-                    decoration: InputDecoration(
-                      hintText: 'Search standards...',
-                      hintStyle: TextStyle(color: Colors.grey.shade600),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) {
-                      searchQuery.value = value.toLowerCase().trim();
-                    },
-                  )
-                : const Text(
-                    'Select Your Standard',
-                    style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.greenColor,
-                    ),
-                  )),
-            centerTitle: true,
-            actions: [
-              Obx(() => IconButton(
-                    icon: Icon(
-                      isSearching.value ? Icons.clear : Icons.search,
-                      color: AppColors.greenColor,
-                    ),
-                    onPressed: () {
-                      if (isSearching.value) {
-                        isSearching.value = false;
-                        searchQuery.value = '';
-                        searchController.clear();
-                      } else {
-                        isSearching.value = true;
-                      }
-                    },
-                  )),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(
-                color: const Color(0xFFD8D8D8),
-                height: 1,
-              ),
-            ),
-          ),
+        final double horizontalPadding = isDesktop
+            ? width * 0.08
+            : isTablet
+                ? 28.0
+                : 16.0;
 
-          // Header Section
-          SliverToBoxAdapter(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F5F5),
-              
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.school_rounded,
-                    size: 56,
-                    color: AppColors.gradientMiddle,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Choose Your Standard',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.gradientEnd,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Select your Standard to access relevant study materials',
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+        final double contentMaxWidth = isDesktop
+            ? 1200.0
+            : isTablet
+                ? 960.0
+                : double.infinity;
+
+        final double badgeSize = isMobile ? 56 : (isTablet ? 60 : 64);
+        final double badgeFontSize = isMobile ? 22 : (isTablet ? 24 : 26);
+        final double bodySize = isMobile ? 16 : 17;
+        final double smallSize = isMobile ? 13 : 14;
+        final double verySmallSize = isMobile ? 11 : 12;
+
+        // Search state
+        final RxBool isSearching = false.obs;
+        final RxString searchQuery = ''.obs;
+        final TextEditingController searchController = TextEditingController();
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF7FFF9),
+          body: CustomScrollView(
+            slivers: [
+              // APP BAR
+              SliverAppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                pinned: true,
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: AppColors.greenColor, size: isMobile ? 26 : 28),
+                  onPressed: () => Get.back(),
+                ),
+                title: Obx(() => isSearching.value
+                    ? TextField(
+                        controller: searchController,
+                        autofocus: true,
+                        style: TextStyle(color: Colors.black87, fontSize: isMobile ? 17 : 19),
+                        decoration: InputDecoration(
+                          hintText: 'Search standards...',
+                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: isMobile ? 16 : 17),
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (value) => searchQuery.value = value.toLowerCase().trim(),
+                      )
+                    : Text(
+                        'Select Your Standard',
+                        style: TextStyle(
+                          fontSize: isMobile ? 20 : 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.greenColor,
+                        ),
+                      )),
+                centerTitle: true,
+                actions: [
+                  Obx(() => IconButton(
+                        icon: Icon(
+                          isSearching.value ? Icons.clear : Icons.search,
+                          color: AppColors.greenColor,
+                          size: isMobile ? 26 : 28,
+                        ),
+                        onPressed: () {
+                          if (isSearching.value) {
+                            isSearching.value = false;
+                            searchQuery.value = '';
+                            searchController.clear();
+                          } else {
+                            isSearching.value = true;
+                          }
+                        },
+                      )),
                 ],
-              ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
-
-          // Title
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Standard',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.greenColor,
+                bottom: const PreferredSize(
+                  preferredSize: Size.fromHeight(1),
+                  child: Divider(height: 1, thickness: 1, color: Color(0xFFD8D8D8)),
                 ),
               ),
-            ),
-          ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              // HEADER - WITH SUBTITLE RESTORED
+              SliverToBoxAdapter(
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, isMobile ? 32 : 40, horizontalPadding, isMobile ? 36 : 44),
+                  decoration: const BoxDecoration(color: Color(0xFFF5F5F5)),
+                  child: Column(
+                    children: [
+                      Icon(Icons.school_rounded, size: isMobile ? 56 : 64, color: AppColors.gradientMiddle),
+                      SizedBox(height: isMobile ? 16 : 20),
+                      Text(
+                        'Choose Your Standard',
+                        style: TextStyle(
+                          fontSize: isMobile ? 21 : 25,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.gradientEnd,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: isMobile ? 10 : 14),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 80 : 20),
+                        child: Text(
+                          'Select your Standard to access relevant study materials',
+                          style: TextStyle(
+                            fontSize: isMobile ? 14.5 : 16,
+                            color: Colors.grey.shade700,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
-          // Filtered List of Standards
-          Obx(() {
-            final filteredStandards = controller.standards.where((standard) {
-              final query = searchQuery.value;
-              if (query.isEmpty) return true;
-              return standard.title.toLowerCase().contains(query) ||
-                  standard.subtitle.toLowerCase().contains(query) ||
-                  standard.badge.toString().contains(query);
-            }).toList();
+              SliverToBoxAdapter(child: SizedBox(height: isMobile ? 16 : 24)),
 
-            if (filteredStandards.isEmpty && searchQuery.value.isNotEmpty) {
-              return SliverToBoxAdapter(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40),
-                    child: Text(
-                      'No standards found',
-                      style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              // "Standards" TITLE - RESTORED
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Text(
+                    'Standards',
+                    style: TextStyle(
+                      fontSize: isMobile ? 18 : 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenColor,
                     ),
                   ),
                 ),
-              );
-            }
+              ),
 
-            return SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final standard = filteredStandards[index];
-                  final bool isLocked = standard.progress == 'Locked';
-                  final Color accentColor = _getStandardAccentColor(standard.badge);
+              SliverToBoxAdapter(child: SizedBox(height: isMobile ? 12 : 16)),
 
-                  return GestureDetector(
-                    onTap: () {
-                            Get.to(
-                              () => const CoreSubjectsView(),
-                              binding: CoreSubjectsBinding(),
-                              arguments: {
-                                'classNumber': standard.badge,
-                                'classTitle': standard.title,
-                              },
-                            );
-                          },
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200, width: 1.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+              // STANDARDS LIST
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                sliver: Obx(() {
+                  final filteredStandards = controller.standards.where((standard) {
+                    final query = searchQuery.value;
+                    if (query.isEmpty) return true;
+                    return standard.title.toLowerCase().contains(query) ||
+                        standard.subtitle.toLowerCase().contains(query) ||
+                        standard.secondSubtitle.toLowerCase().contains(query) ||
+                        standard.badge.toString().contains(query);
+                  }).toList();
+
+                  if (filteredStandards.isEmpty && searchQuery.value.isNotEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(isMobile ? 60 : 80),
+                          child: Text(
+                            'No standards found',
+                            style: TextStyle(fontSize: isMobile ? 16 : 18, color: Colors.grey.shade600),
                           ),
-                        ],
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: _getStandardGradient(standard.badge),
-                            child: Center(
-                              child: Text(
-                                standard.badge.toString().padLeft(2, '0'),
-                                style: const TextStyle(
+                    );
+                  }
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final standard = filteredStandards[index];
+                        final Color accentColor = _getStandardAccentColor(standard.badge);
+
+                        return Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.to(
+                                  () => const CoreSubjectsView(),
+                                  binding: CoreSubjectsBinding(),
+                                  arguments: {
+                                    'classNumber': standard.badge,
+                                    'classTitle': standard.title,
+                                  },
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
                                   color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.08),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Badge
+                                    Container(
+                                      width: badgeSize,
+                                      height: badgeSize,
+                                      decoration: _getStandardGradient(standard.badge),
+                                      child: Center(
+                                        child: Text(
+                                          '${standard.badge}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: badgeFontSize,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    // Content
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            standard.title,
+                                            style: TextStyle(
+                                              fontSize: bodySize + 1,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            standard.subtitle,
+                                            style: TextStyle(
+                                              fontSize: smallSize,
+                                              color: Colors.grey.shade600,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            standard.secondSubtitle,
+                                            style: TextStyle(
+                                              fontSize: smallSize - 0.5,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.stream, size: 13, color: accentColor),
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                child: Text(
+                                                  standard.streamText,
+                                                  style: TextStyle(
+                                                    fontSize: verySmallSize,
+                                                    color: accentColor,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+
+                                              const SizedBox(width: 10),
+                                              Icon(
+                                                _getProgressIcon(standard.progress),
+                                                size: 13,
+                                                color: _getProgressColor(standard.progress),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                standard.progress,
+                                                style: TextStyle(
+                                                  fontSize: verySmallSize,
+                                                  color: _getProgressColor(standard.progress),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Chevron
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.grey.shade400,
+                                      size: 24,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  standard.title,
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  standard.subtitle,
-                                  style: const TextStyle(fontSize: 14.5),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  standard.secondSubtitle,
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      standard.streamIcon,
-                                      size: 14,
-                                      color: accentColor,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      standard.streamText,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: accentColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Icon(
-                                      standard.progress == 'In Progress'
-                                          ? Icons.whatshot
-                                          : standard.progress == 'Locked'
-                                              ? Icons.lock_outline
-                                              : Icons.punch_clock,
-                                      size: 14,
-                                      color: standard.progress == 'Locked'
-                                          ? Colors.grey.shade600
-                                          : standard.progress == 'In Progress'
-                                              ? Colors.orange.shade600
-                                              : accentColor,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      standard.progress,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: standard.progress == 'Locked'
-                                            ? Colors.grey.shade600
-                                            : standard.progress == 'In Progress'
-                                                ? Colors.orange.shade600
-                                                : accentColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: isLocked ? Colors.grey.shade400 : Colors.grey.shade700,
-                            size: 28,
-                          ),
-                        ],
-                      ),
+                        );
+                      },
+                      childCount: filteredStandards.length,
                     ),
                   );
-                },
-                childCount: filteredStandards.length,
+                }),
               ),
-            );
-          }),
-        ],
-      ),
+
+              SliverToBoxAdapter(child: SizedBox(height: isMobile ? 30 : 50)),
+            ],
+          ),
+        );
+      },
     );
   }
 }

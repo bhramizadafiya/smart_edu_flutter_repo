@@ -94,6 +94,10 @@ class AddStudyMaterialController extends GetxController {
     }
   }
 
+  void clearCoverImage() {
+  coverImagePath.value = null;
+}
+
   void openCoverPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
