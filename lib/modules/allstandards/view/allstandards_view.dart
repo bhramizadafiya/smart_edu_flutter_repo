@@ -268,6 +268,7 @@ class AllStandardsView extends GetView<AllStandardsController> {
                                   arguments: {
                                     'classNumber': standard.badge,
                                     'classTitle': standard.title,
+                                    'standard_id': standard.standardId,
                                   },
                                 );
                               },

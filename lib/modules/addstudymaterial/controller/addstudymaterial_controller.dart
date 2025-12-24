@@ -1,10 +1,19 @@
 // addstudymaterial_controller.dart
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../utils/api_endpoints.dart';
+import '../../../utils/auth_token_service.dart';
 import '../../studymateriallist/controller/studymateriallist_controller.dart';
 
 class UploadFileModel {
+  final File file;
   final String name;
   final String type;
   final double sizeMB;
@@ -12,6 +21,7 @@ class UploadFileModel {
   RxBool uploaded = false.obs;
 
   UploadFileModel({
+    required this.file,
     required this.name,
     required this.type,
     required this.sizeMB,
@@ -22,89 +32,110 @@ class AddStudyMaterialController extends GetxController {
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
 
-  final language = 'English'.obs;
-  final category = 'Textbook'.obs;
+  final languageId = 'ybai_language_4m142x5lth'.obs;
   final isPublic = true.obs;
 
   final RxList<UploadFileModel> files = <UploadFileModel>[].obs;
-  final Rxn<String> coverImagePath = Rxn<String>();
+  final Rxn<File> coverImageFile = Rxn<File>();
 
   final RxBool uploading = false.obs;
   final RxBool saving = false.obs;
 
-  final languages = ['English', 'Hindi', 'Gujarati', 'Spanish'];
-  final categories = [
-    'Textbook',
-    'Notes',
-    'Reference Material',
-    'Question Bank',
-  ];
+  final AuthTokenService authService = Get.find<AuthTokenService>();
 
-  // Reference to StudyMaterialListController
+  String standardId = '';
+  String subjectId = '';
+
   StudyMaterialListController? listController;
 
   @override
   void onInit() {
     super.onInit();
-    // Safely try to find the list controller
+
+    final args = Get.arguments as Map<String, dynamic>?;
+    standardId = args?['standard_id'] ?? '';
+    subjectId = args?['subject_id'] ?? '';
+
     if (Get.isRegistered<StudyMaterialListController>()) {
       listController = Get.find<StudyMaterialListController>();
     }
   }
 
   @override
-  void onClose() {
-    titleCtrl.dispose();
-    descCtrl.dispose();
-    super.onClose();
+  void onReady() {
+    super.onReady();
+
+    if (standardId.isEmpty || subjectId.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please select a subject first',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 3),
+      );
+      Get.back();
+    }
   }
 
-  void addMockFile({String? name, String type = 'PDF', double sizeMB = 15.2}) {
-    final file = UploadFileModel(
-      name: name ?? 'calculus_textbook.pdf',
-      type: type,
-      sizeMB: sizeMB,
+  Future<void> pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
     );
-    files.add(file);
-    _simulateUpload(file);
+
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      final sizeMB = file.lengthSync() / (1024 * 1024);
+
+      final uploadFile = UploadFileModel(
+        file: file,
+        name: result.files.single.name,
+        type: path.extension(result.files.single.name).toUpperCase().replaceFirst('.', ''),
+        sizeMB: sizeMB,
+      );
+
+      files.clear();
+      files.add(uploadFile);
+      _simulateUpload(uploadFile);
+    }
   }
 
   void _simulateUpload(UploadFileModel file) {
     uploading.value = true;
     file.progress.value = 0.0;
 
-    Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      file.progress.value = (file.progress.value + 0.15).clamp(0.0, 1.0);
-
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      file.progress.value = (file.progress.value + 0.1).clamp(0.0, 1.0);
       if (file.progress.value >= 1.0) {
         file.uploaded.value = true;
         timer.cancel();
-
-        // Check if all files are uploaded
-        if (files.every((f) => f.uploaded.value)) {
-          uploading.value = false;
-        }
+        uploading.value = false;
       }
     });
   }
 
   void removeFile(int index) {
-    if (index >= 0 && index < files.length) {
-      files.removeAt(index);
+    files.removeAt(index);
+  }
+
+  Future<void> pickCoverImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 85);
+
+    if (pickedFile != null) {
+      coverImageFile.value = File(pickedFile.path);
     }
   }
 
   void clearCoverImage() {
-  coverImagePath.value = null;
-}
+    coverImageFile.value = null;
+  }
 
   void openCoverPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -112,27 +143,27 @@ class AddStudyMaterialController extends GetxController {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt_rounded, color: Colors.green, size: 28),
-                title: const Text('Take Photo', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  coverImagePath.value = 'assets/mock_cover_camera.png';
+                leading: const Icon(Icons.camera_alt_rounded, color: Colors.green),
+                title: const Text('Take Photo'),
+                onTap: () async {
                   Get.back();
+                  await pickCoverImage(ImageSource.camera);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_rounded, color: Colors.green, size: 28),
-                title: const Text('From Gallery', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  coverImagePath.value = 'assets/mock_cover_gallery.png';
+                leading: const Icon(Icons.photo_library_rounded, color: Colors.green),
+                title: const Text('From Gallery'),
+                onTap: () async {
                   Get.back();
+                  await pickCoverImage(ImageSource.gallery);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.image_outlined, color: Colors.grey, size: 28),
-                title: const Text('Default', style: TextStyle(fontSize: 16)),
+                leading: const Icon(Icons.crop_square_rounded, color: Colors.grey),
+                title: const Text('Default (No Cover)'),
                 onTap: () {
-                  coverImagePath.value = null;
                   Get.back();
+                  clearCoverImage();
                 },
               ),
             ],
@@ -143,66 +174,95 @@ class AddStudyMaterialController extends GetxController {
   }
 
   Future<void> saveResource() async {
-    // Validation
     if (titleCtrl.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please enter a resource title', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.shade100, colorText: Colors.red.shade900);
+      Get.snackbar('Error', 'Please enter a title');
       return;
     }
 
     if (files.isEmpty) {
-      Get.snackbar('Error', 'Please upload at least one file', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.shade100, colorText: Colors.red.shade900);
+      Get.snackbar('Error', 'Please upload a file');
       return;
     }
 
-    if (files.any((f) => !f.uploaded.value)) {
-      Get.snackbar('Please Wait', 'All files must finish uploading', snackPosition: SnackPosition.BOTTOM);
+    if (!files.first.uploaded.value) {
+      Get.snackbar('Wait', 'File is still uploading');
       return;
     }
 
     saving.value = true;
 
-    // Simulate save delay
-    await Future.delayed(const Duration(milliseconds: 1000));
+    try {
+      final headers = await authService.getAuthHeaders();
+      final uri = Uri.parse(ApiConfig.uploadResource);
 
-    // Create new material
-    final newMaterial = {
-      'title': titleCtrl.text.trim(),
-      'subtitle': descCtrl.text.trim().isEmpty ? 'No description' : descCtrl.text.trim(),
-      'type': '${files.first.type} • ${files.first.sizeMB.toStringAsFixed(1)} MB',
-      'status': 'Processed',
-      'statusColor': 0xFF00C853,
-      'icon': files.first.type == 'PDF' ? '📘' : files.first.type == 'DOC' ? '📄' : '🖼️',
-      'time': 'Just now',
-    };
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(headers);
 
-    // Update the main list if possible
-    if (listController != null && Get.isRegistered<StudyMaterialListController>()) {
-      listController!.studyMaterials.insert(0, newMaterial);
-      listController!.applyFilterAndSort(); // Refresh UI
+      request.fields.addAll({
+        'title': titleCtrl.text.trim(),
+        'description': descCtrl.text.trim(),
+        'language_id': languageId.value,
+        'is_public': isPublic.value.toString(),
+        'standard_id': standardId,
+        'subject_id': subjectId,
+      });
+
+      final mainFile = files.first.file;
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        mainFile.path,
+        filename: files.first.name,
+      ));
+
+      if (coverImageFile.value != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'cover_image',
+          coverImageFile.value!.path,
+          filename: path.basename(coverImageFile.value!.path),
+        ));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        final jsonData = jsonDecode(response.body);
+        Get.snackbar(
+          'Success!',
+          jsonData['message'] ?? 'Resource uploaded successfully',
+          backgroundColor: Colors.green.shade100,
+          colorText: Colors.green.shade900,
+          duration: const Duration(seconds: 3),
+        );
+
+        listController?.fetchMaterials();
+
+        _clearForm();
+        Get.back();
+      } else {
+        final jsonData = jsonDecode(response.body);
+        Get.snackbar('Error', jsonData['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      debugPrint('Upload error: $e');
+      Get.snackbar('Error', 'Network error. Please try again.');
+    } finally {
+      saving.value = false;
     }
+  }
 
-    saving.value = false;
-
-    // Success message
-    Get.snackbar(
-      'Success!',
-      'Study material uploaded successfully',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade100,
-      colorText: Colors.green.shade900,
-      duration: const Duration(seconds: 3),
-    );
-
-    // Clear form
+  void _clearForm() {
     titleCtrl.clear();
     descCtrl.clear();
     files.clear();
-    coverImagePath.value = null;
-    language.value = 'English';
-    category.value = 'Textbook';
+    coverImageFile.value = null;
     isPublic.value = true;
+  }
 
-    // Go back to list
-    Get.back();
+  @override
+  void onClose() {
+    titleCtrl.dispose();
+    descCtrl.dispose();
+    super.onClose();
   }
 }

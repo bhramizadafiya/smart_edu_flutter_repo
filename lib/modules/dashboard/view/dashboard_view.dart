@@ -495,8 +495,37 @@ class DashboardView extends GetView<DashboardController> {
               }).toList(),
             )),
         const SizedBox(height: 10),
-        Center(child: GestureDetector(onTap: () => Get.snackbar('Activity', 'View all activity'), child: Text('View All Activity →', style: TextStyle(color: Colors.blue.shade700, fontSize: bodySize, fontWeight: FontWeight.w600)))),
+        GestureDetector(
+  onTap: () => Get.snackbar('Activity', 'View all activity'),
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF5F5F5),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'View All Activity',
+          style: TextStyle(
+            fontSize: bodySize,
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Icon(
+          Icons.north_east,
+          size: 16,
+          color: Colors.grey.shade700,
+        ),
       ],
+    ),
+  ),
+),
+ ],
     );
   }
 
@@ -530,7 +559,7 @@ class DashboardView extends GetView<DashboardController> {
               children: ctrl.standards.where((s) => [10, 11, 12].contains(s.badge)).map((s) {
                 final accent = getAccent(s.badge);
                 return GestureDetector(
-                  onTap: () => Get.to(() => const CoreSubjectsView(), binding: CoreSubjectsBinding(), arguments: {'classNumber': s.badge, 'classTitle': s.title}),
+                  onTap: () => Get.to(() => const CoreSubjectsView(), binding: CoreSubjectsBinding(), arguments: {'classNumber': s.badge, 'classTitle': s.title,'standard_id':s.standardId}),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),

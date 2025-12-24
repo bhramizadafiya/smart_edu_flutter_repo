@@ -21,6 +21,12 @@ class ApiConfig {
   static const String forgotPassword = '$baseUrl/forgot-password';
   static const String resetPassword = '$baseUrl/reset-password';
 
+  static const String getAllStandards = '$baseUrl/get-all-standards'; // Added as per your API
+
+  static const String getSubjectsByStandardId = '$baseUrl/get-subjects-by-standard-id';
+static const String getAllLanguages = '$baseUrl/get-all-languages';
+static const String uploadResource = '$baseUrl/upload-resource';
+
   // You can also define dynamic URLs like:
   // static String userProfile(String userId) => '$baseUrl/user/$userId';
 }

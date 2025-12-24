@@ -1,134 +1,40 @@
 // lib/modules/coresubjects/controller/coresubjects_controller.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import '../../../utils/api_endpoints.dart';
+import '../../../utils/auth_token_service.dart';
 
 class CoreSubjectsController extends GetxController {
-  var showAllSubjects = false.obs;
-
-  // Dynamic class information
+  // Dynamic class information from previous screen
   late final int classNumber;
   late final String classTitle;
+  late final String standardId; // Required for API call
+
+  // Header gradient (based on class)
   late final List<Color> headerGradient;
 
-  // Core Subjects (shown by default)
-  final List<Map<String, dynamic>> coreSubjects = [
-    {
-      "title": "Mathematics",
-      "subtitle": "Foundation for engineering & competitive exams",
-      "color": const Color(0xFF1976D2),
-      "gradientColors": const [
-        Color(0xFF42A5F5),
-        Color(0xFF1976D2),
-        Color(0xFF0D47A1)
-      ],
-    },
-    {
-      "title": "Science",
-      "subtitle": "NEET & JEE foundation\npreparation",
-      "color": const Color(0xFF3BAA8F),
-      "gradientColors": const [
-        Color(0xFF66D1B2),
-        Color.fromARGB(255, 29, 152, 121),
-        Color(0xFF1C524A)
-      ],
-    },
-    {
-      "title": "Physics",
-      "subtitle": "Mechanics, Electricity,\nModern Physics & more",
-      "color": const Color(0xFFFF9800),
-      "gradientColors": const [
-        Color(0xFFFFB74D),
-        Color(0xFFFF9800),
-        Color(0xFFF57C00)
-      ],
-    },
-  ];
+  // Subjects fetched from API
+  final subjects = RxList<Map<String, dynamic>>([]);
+  final isLoading = true.obs;
+  final hasError = false.obs;
+  final errorMessage = ''.obs;
 
-  // More Subjects (shown when "View More" is tapped)
-  final List<Map<String, dynamic>> moreSubjects = [
-    {
-      "title": "Hindi",
-      "subtitle": "हिन्दी साहित्य एवं व्याकरण",
-      "color": const Color(0xFF9C27B0),
-      "gradientColors": const [
-        Color(0xFFBA68C8),
-        Color(0xFF9C27B0),
-        Color(0xFF7B1FA2)
-      ],
-    },
-    {
-      "title": "Sanskrit",
-      "subtitle": "संस्कृत व्याकरण एवं साहित्य",
-      "color": const Color(0xFFEF6C00),
-      "gradientColors": const [
-        Color(0xFFFF8A65),
-        Color(0xFFEF6C00),
-        Color(0xFFB53D00)
-      ],
-    },
-    {
-      "title": "Social Science",
-      "subtitle": "History, Geography, Civics & Economics",
-      "color": const Color(0xFF795548),
-      "gradientColors": const [
-        Color(0xFFA1887F),
-        Color(0xFF795548),
-        Color(0xFF5D4037)
-      ],
-    },
-    {
-      "title": "IT",
-      "subtitle": "Programming, Database & Web Technology",
-      "color": const Color(0xFF1565C0),
-      "gradientColors": const [
-        Color(0xFF42A5F5),
-        Color(0xFF1565C0),
-        Color(0xFF0D47A1)
-      ],
-    },
-    {
-      "title": "English",
-      "subtitle": "Advanced Grammar & Literature",
-      "color": const Color(0xFF3949AB),
-      "gradientColors": const [
-        Color(0xFF7986CB),
-        Color(0xFF3949AB),
-        Color(0xFF283593)
-      ],
-    },
-    {
-      "title": "Chemistry",
-      "subtitle": "Organic, Inorganic & Physical",
-      "color": const Color(0xFFE91E63),
-      "gradientColors": const [
-        Color(0xFFF06292),
-        Color(0xFFE91E63),
-        Color(0xFFC2185B)
-      ],
-    },
-    {
-      "title": "Biology",
-      "subtitle": "Botany & Zoology for NEET",
-      "color": const Color(0xFF2E7D32),
-      "gradientColors": const [
-        Color(0xFF66BB6A),
-        Color(0xFF2E7D32),
-        Color(0xFF1B5E20)
-      ],
-    },
-  ];
+  final AuthTokenService authService = Get.find<AuthTokenService>();
 
   @override
   void onInit() {
     super.onInit();
 
-    // Get arguments passed from Standards card tap
+    // Get arguments passed from Standards screen
     final args = Get.arguments as Map<String, dynamic>?;
 
     classNumber = args?['classNumber'] as int? ?? 11;
     classTitle = args?['classTitle'] as String? ?? 'Class $classNumber';
+    standardId = args?['standard_id'] as String? ?? '';
 
-    // Set header gradient based on class
+    // Set header gradient based on class number
     switch (classNumber) {
       case 10:
         headerGradient = const [
@@ -158,10 +64,158 @@ class CoreSubjectsController extends GetxController {
           Color(0xFF1C524A),
         ];
     }
+
+    // Fetch subjects if standardId is provided
+    if (standardId.isNotEmpty) {
+      fetchSubjects();
+    } else {
+      isLoading.value = false;
+      hasError.value = true;
+      errorMessage.value = 'No standard selected';
+    }
   }
 
-  void toggleViewMore() {
-    showAllSubjects.value = !showAllSubjects.value;
+  /// Fetch subjects from API using standard_id
+  Future<void> fetchSubjects() async {
+    isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
+
+    try {
+      final headers = await authService.getAuthHeaders();
+
+      final uri = Uri.parse(ApiConfig.getSubjectsByStandardId);
+
+      final body = jsonEncode({
+        "standard_id": standardId,
+      });
+
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: body,
+      );
+
+      debugPrint('API Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData['status'] == 'success' && jsonData['statuscode'] == 200) {
+          final List<dynamic> data = jsonData['data'] ?? [];
+
+          subjects.clear();
+
+          for (var item in data) {
+            final String subjectName = item['subject_name']?.toString().trim() ?? 'Unknown';
+
+            if (subjectName.isEmpty || subjectName == 'null') continue;
+
+            // Map subject to gradient and color
+            final subjectConfig = _getSubjectConfig(subjectName);
+
+            subjects.add({
+              "title": subjectName,
+              "subtitle": subjectConfig['subtitle'],
+              "color": subjectConfig['color'],
+              "gradientColors": subjectConfig['gradientColors'],
+            });
+          }
+
+          if (subjects.isEmpty) {
+            hasError.value = true;
+            errorMessage.value = 'No subjects available for this standard';
+          }
+        } else {
+          throw Exception(jsonData['message'] ?? 'Failed to load subjects');
+        }
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching subjects: $e');
+      hasError.value = true;
+      errorMessage.value = 'Failed to load subjects. Please try again later.';
+
+      Get.snackbar(
+        'Error',
+        'Unable to fetch subjects',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Helper: Define gradient, color, and subtitle for each subject
+  Map<String, dynamic> _getSubjectConfig(String subjectName) {
+    final lowerName = subjectName.toLowerCase();
+
+    switch (lowerName) {
+      case 'mathematics':
+      case 'maths':
+        return {
+          'color': const Color(0xFF1976D2),
+          'gradientColors': const [Color(0xFF42A5F5), Color(0xFF1976D2), Color(0xFF0D47A1)],
+          'subtitle': 'Foundation for engineering & competitive exams',
+        };
+      case 'physics':
+        return {
+          'color': const Color(0xFFFF9800),
+          'gradientColors': const [Color(0xFFFFB74D), Color(0xFFFF9800), Color(0xFFF57C00)],
+          'subtitle': 'Mechanics, Electricity,\nModern Physics & more',
+        };
+      case 'chemistry':
+        return {
+          'color': const Color(0xFFE91E63),
+          'gradientColors': const [Color(0xFFF06292), Color(0xFFE91E63), Color(0xFFC2185B)],
+          'subtitle': 'Organic, Inorganic & Physical',
+        };
+      case 'biology':
+        return {
+          'color': const Color(0xFF2E7D32),
+          'gradientColors': const [Color(0xFF66BB6A), Color(0xFF2E7D32), Color(0xFF1B5E20)],
+          'subtitle': 'Botany & Zoology for NEET',
+        };
+      case 'english':
+        return {
+          'color': const Color(0xFF3949AB),
+          'gradientColors': const [Color(0xFF7986CB), Color(0xFF3949AB), Color(0xFF283593)],
+          'subtitle': 'Advanced Grammar & Literature',
+        };
+      case 'hindi':
+        return {
+          'color': const Color(0xFF9C27B0),
+          'gradientColors': const [Color(0xFFBA68C8), Color(0xFF9C27B0), Color(0xFF7B1FA2)],
+          'subtitle': 'हिन्दी साहित्य एवं व्याकरण',
+        };
+      case 'sanskrit':
+        return {
+          'color': const Color(0xFFEF6C00),
+          'gradientColors': const [Color(0xFFFF8A65), Color(0xFFEF6C00), Color(0xFFB53D00)],
+          'subtitle': 'संस्कृत व्याकरण एवं साहित्य',
+        };
+      case 'social science':
+        return {
+          'color': const Color(0xFF795548),
+          'gradientColors': const [Color(0xFFA1887F), Color(0xFF795548), Color(0xFF5D4037)],
+          'subtitle': 'History, Geography, Civics & Economics',
+        };
+      case 'it':
+        return {
+          'color': const Color(0xFF1565C0),
+          'gradientColors': const [Color(0xFF42A5F5), Color(0xFF1565C0), Color(0xFF0D47A1)],
+          'subtitle': 'Programming, Database & Web Technology',
+        };
+      default:
+        return {
+          'color': const Color(0xFF66D1B2),
+          'gradientColors': const [Color(0xFF66D1B2), Color(0xFF3BAA8F), Color(0xFF1C524A)],
+          'subtitle': 'Comprehensive study material and practice',
+        };
+    }
   }
 
   void onSubjectTap(String subjectName) {

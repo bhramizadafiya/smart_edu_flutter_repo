@@ -259,7 +259,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../utils/api_endpoints.dart'; // adjust path if needed
@@ -282,7 +282,6 @@ class ActivityItem {
 }
 
 // models/standard_item.dart
-// models/standard_item.dart
 class StandardItem {
   final String title;
   final String subtitle;
@@ -290,7 +289,8 @@ class StandardItem {
   final int badge;
   final String progress;
   final String streamText;
-  final IconData streamIcon; // Required – no null allowed
+  final IconData streamIcon; 
+  final String standardId;
 
   StandardItem({
     required this.title,
@@ -300,6 +300,7 @@ class StandardItem {
     required this.progress,
     required this.streamText,
     required this.streamIcon,
+    required this.standardId, // ← Make it required
   });
 }
 
@@ -370,132 +371,135 @@ class DashboardController extends GetxController {
     ),
   ]);
 
+  // Standards list - now dynamic from API
+  final standards = RxList<StandardItem>([]);
 
+  // Competitive Exams (unchanged - hardcoded)
+  final exams = RxList<ExamItem>([
+    ExamItem(
+      code: 'JEE',
+      title: 'JEE Main & Advanced',
+      subtitle: 'Engineering Entrance Preparation',
+      subjectsIcon: 'PCM',
+      subjects: 'Physics, Chemistry, Mathematics',
+      duration: '2 Years',
+      accessType: 'Premium',
+      difficulty: 'High',
+    ),
+    ExamItem(
+      code: 'NEET',
+      title: 'NEET Medical Entrance',
+      subtitle: 'Medical & Dental Preparation',
+      subjectsIcon: 'PCB',
+      subjects: 'Physics, Chemistry, Biology',
+      duration: '2 Years',
+      accessType: 'Premium',
+      difficulty: 'High',
+    ),
+    ExamItem(
+      code: 'UGC',
+      title: 'UGC NET',
+      subtitle: 'University Grants Commission',
+      subjectsIcon: 'Multiple',
+      subjects: 'Multiple Subjects',
+      duration: 'Flexible',
+      accessType: 'Available',
+      difficulty: 'Medium',
+    ),
+    ExamItem(
+      code: 'GATE',
+      title: 'GATE',
+      subtitle: 'Graduate Aptitude Test',
+      subjectsIcon: 'Engineering',
+      subjects: 'Engineering Subjects',
+      duration: '1 Year',
+      accessType: 'Premium',
+      difficulty: 'High',
+    ),
+    ExamItem(
+      code: 'CLAT',
+      title: 'CLAT (Law Entrance)',
+      subtitle: 'Law College Admission Test',
+      subjectsIcon: 'GK',
+      subjects: 'English, GK, Legal Reasoning',
+      duration: '1 Year',
+      accessType: 'Premium',
+      difficulty: 'Medium',
+    ),
+    ExamItem(
+      code: 'CAT',
+      title: 'CAT (MBA Entrance)',
+      subtitle: 'Management Entrance Test',
+      subjectsIcon: 'QA',
+      subjects: 'QA, VARC, DILR sections',
+      duration: '1 Year',
+      accessType: 'Premium',
+      difficulty: 'High',
+    ),
+  ]);
 
-// In your DashboardController
-final standards = RxList<StandardItem>([
-  // Class 9th - New!
-  StandardItem(
-    title: 'Class 09th',
-    subtitle: 'CBSE Board Preparation',
-    secondSubtitle: 'Foundation for higher studies',
-    badge: 9,
-    progress: 'In Progress',
-    streamText: '6 Subjects',
-    streamIcon: Icons.menu_book,
-  ),
-
-  // Class 10th
-  StandardItem(
-    title: 'Class 10th',
-    subtitle: 'CBSE Board Preparation',
-    secondSubtitle: 'Foundation for higher studies',
-    badge: 10,
-    progress: 'In Progress',
-    streamText: '6 Subjects',
-    streamIcon: Icons.menu_book,
-  ),
-
-  // Class 11th Science
-  StandardItem(
-    title: 'Class 11th Science',
-    subtitle: 'PCM/PCB Stream',
-    secondSubtitle: 'JEE/NEET foundation preparation',
-    badge: 11,
-    progress: 'Locked',
-    streamText: 'PCM/PCB',
-    streamIcon: Icons.science,
-  ),
-
-  // Class 12th Science
-  StandardItem(
-    title: 'Class 12th Science',
-    subtitle: 'Board Exams & Entrance Prep',
-    secondSubtitle: 'Final year preparation',
-    badge: 12,
-    progress: 'Locked',
-    streamText: 'Advanced',
-    streamIcon: Icons.school,
-  ),
-]);
-  // Competitive Exams
- final exams = RxList<ExamItem>([
-  ExamItem(
-    code: 'JEE',
-    title: 'JEE Main & Advanced',
-    subtitle: 'Engineering Entrance Preparation',
-    subjectsIcon: 'PCM',
-    subjects: 'Physics, Chemistry, Mathematics',
-    duration: '2 Years',
-    accessType: 'Premium',
-    difficulty: 'High',
-  ),
-  ExamItem(
-    code: 'NEET',
-    title: 'NEET Medical Entrance',
-    subtitle: 'Medical & Dental Preparation',
-    subjectsIcon: 'PCB',
-    subjects: 'Physics, Chemistry, Biology',
-    duration: '2 Years',
-    accessType: 'Premium',
-    difficulty: 'High',
-  ),
-  ExamItem(
-    code: 'UGC',
-    title: 'UGC NET',
-    subtitle: 'University Grants Commission',
-    subjectsIcon: 'Multiple',
-    subjects: 'Multiple Subjects',
-    duration: 'Flexible',
-    accessType: 'Available',
-    difficulty: 'Medium',
-  ),
-  ExamItem(
-    code: 'GATE',
-    title: 'GATE',
-    subtitle: 'Graduate Aptitude Test',
-    subjectsIcon: 'Engineering',
-    subjects: 'Engineering Subjects',
-    duration: '1 Year',
-    accessType: 'Premium',
-    difficulty: 'High',
-  ),
-  // Add more if needed
-  ExamItem(
-    code: 'CLAT',
-    title: 'CLAT (Law Entrance)',
-    subtitle: 'Law College Admission Test',
-    subjectsIcon: 'GK',
-    subjects: 'English, GK, Legal Reasoning',
-    duration: '1 Year',
-    accessType: 'Premium',
-    difficulty: 'Medium',
-  ),
-  ExamItem(
-    code: 'CAT',
-    title: 'CAT (MBA Entrance)',
-    subtitle: 'Management Entrance Test',
-    subjectsIcon: 'QA',
-    subjects: 'QA, VARC, DILR sections',
-    duration: '1 Year',
-    accessType: 'Premium',
-    difficulty: 'High',
-  ),
-]);
   // secure storage instance (still used for user_id cleanup)
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   var isLoggingOut = false.obs;
 
-  // Actions
+  @override
+  void onInit() {
+    super.onInit();
+    fetchStandards(); // Fetch standards from API on controller init
+  }
+
+  // API Integration: Fetch standards and map to StandardItem
+  Future<void> fetchStandards() async {
+    try {
+      final headers = await authService.getAuthHeaders();
+      final uri = Uri.parse(ApiConfig.baseUrl + '/get-all-standards'); // Use your API URL
+      final response = await http.post(uri, headers: headers); // POST as per API
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['statuscode'] == 200 && jsonData['status'] == 'success') {
+          final List<dynamic> data = jsonData['data'] ?? [];
+          standards.clear(); // Clear hardcoded list
+          for (var item in data) {
+            final String name = item['standard_name'] ?? 'Unknown';
+            int badge = int.tryParse(name.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0; // Extract number from "11th" -> 11
+            String board = item['board']['board_name'] ?? 'CBSE';
+
+            // Derive other fields based on badge (as in your original hardcoded logic)
+            String title = 'Class $name';
+            String subtitle = '$board Board Preparation';
+            String secondSubtitle = badge <= 10 ? 'Foundation for higher studies' : 'JEE/NEET foundation preparation';
+            String progress = badge <= 10 ? 'In Progress' : 'Locked';
+            String streamText = badge <= 10 ? '6 Subjects' : (badge == 11 ? 'PCM/PCB' : 'Advanced');
+            IconData streamIcon = badge <= 10 ? Icons.menu_book : (badge == 11 ? Icons.science : Icons.school);
+
+            standards.add(StandardItem(
+              title: title,
+              subtitle: subtitle,
+              secondSubtitle: secondSubtitle,
+              badge: badge,
+              progress: progress,
+              streamText: streamText,
+              streamIcon: streamIcon,
+              standardId: item['standard_id'],
+            ));
+          }
+          standards.refresh(); // Update UI
+        } else {
+          Get.snackbar('Error', jsonData['message'] ?? 'Failed to fetch standards');
+        }
+      } else {
+        Get.snackbar('Error', 'Failed to fetch standards: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      Get.snackbar('Network Error', 'Unable to fetch standards: $e');
+    }
+  }
+
+  // Actions (unchanged)
   void openActivityDetails(ActivityItem item) {
-    // placeholder - route or modal
-    Get.snackbar(
-      'Activity',
-      item.title,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(milliseconds: 900),
-    );
+    Get.snackbar('Activity', item.title, snackPosition: SnackPosition.BOTTOM, duration: const Duration(milliseconds: 900));
   }
 
   void openStandard(StandardItem item) {
@@ -504,136 +508,75 @@ final standards = RxList<StandardItem>([
   }
 
   void selectStandard(StandardItem standard) {
-    // Handle navigation or logic when a standard is selected
-    Get.snackbar(
-      "Selected",
-      "${standard.title} selected",
-      snackPosition: SnackPosition.BOTTOM,
-    );
-
-    // Example navigation:
-    // Get.to(() => StandardContentView(standard: standard));
+    Get.snackbar("Selected", "${standard.title} selected", snackPosition: SnackPosition.BOTTOM);
   }
 
   void openExam(ExamItem exam) {
     Get.snackbar('Exam', exam.title, snackPosition: SnackPosition.BOTTOM);
   }
 
-  
-
   @override
   void onClose() {
     super.onClose();
   }
 
-  /// Example: fetch dashboard data using centralized auth headers
   Future<void> fetchDashboardData() async {
     try {
       final headers = await authService.getAuthHeaders();
-      final uri = Uri.parse(
-        ApiConfig.baseUrl + '/dashboard-data',
-      ); // replace with real endpoint
+      final uri = Uri.parse(ApiConfig.baseUrl + '/dashboard-data');
       final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
-        // parse and update observables
-        // final payload = jsonDecode(response.body);
-        // update controller state accordingly
       } else if (response.statusCode == 401) {
-        // optional: handle unauthorized (authService.getValidToken will refresh next time)
-        Get.snackbar(
-          'Unauthorized',
-          'Session expired. Trying to refresh token.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        // you could call authService.getValidToken() and retry if desired
+        Get.snackbar('Unauthorized', 'Session expired. Trying to refresh token.', snackPosition: SnackPosition.BOTTOM);
       } else {
-        debugPrint(
-          'Dashboard fetch failed: ${response.statusCode} ${response.body}',
-        );
+        debugPrint('Dashboard fetch failed: ${response.statusCode} ${response.body}');
       }
     } catch (e, st) {
       debugPrint('fetchDashboardData error: $e\n$st');
     }
   }
 
-  /// Call backend logout API, clear secure storage and navigate to login.
-  /// Uses AuthTokenService for headers and clearing token.
   Future<void> logout() async {
     if (isLoggingOut.value) return;
     isLoggingOut.value = true;
 
     try {
-      // Optional: show quick snackbar while working
-      Get.snackbar(
-        'Logging out',
-        'Signing you out...',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Logging out', 'Signing you out...', snackPosition: SnackPosition.BOTTOM);
 
-      // get headers (authService will provide Bearer token if available/valid)
       final headers = await authService.getAuthHeaders();
 
-      // read stored user id for backend payload (if needed)
       final storedUserId = await _secureStorage.read(key: 'user_id');
 
-      final uri = Uri.parse(ApiConfig.logout); // ensure ApiConfig.logout exists
+      final uri = Uri.parse(ApiConfig.logout);
       final body = jsonEncode({
         if (storedUserId != null) 'user_id': storedUserId,
-        // add other params if backend requires
       });
 
       final response = await http.post(uri, headers: headers, body: body);
 
       if (response.statusCode == 200) {
-        // success: clear session and navigate
         await authService.clearToken();
         await _secureStorage.delete(key: 'user_id');
 
-        Get.snackbar(
-          'Logged out',
-          'You have been signed out.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade50,
-          colorText: Colors.green.shade800,
-        );
+        Get.snackbar('Logged out', 'You have been signed out.', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green.shade50, colorText: Colors.green.shade800);
 
-        // navigate to login and remove all routes
         Future.delayed(const Duration(milliseconds: 300), () {
           Get.offAllNamed('/login');
         });
       } else {
-        // try to parse error message
         String message = 'Logout failed';
         try {
           final payload = jsonDecode(response.body) as Map<String, dynamic>?;
           message = payload?['message'] as String? ?? message;
         } catch (_) {}
 
-        Get.snackbar(
-          'Logout Error',
-          message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange.shade50,
-          colorText: Colors.orange.shade800,
-        );
-
-        // optionally still clear local session to force sign out:
-        // await authService.clearToken();
-        // await _secureStorage.delete(key: 'user_id');
-        // Get.offAllNamed('/login');
+        Get.snackbar('Logout Error', message, snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange.shade50, colorText: Colors.orange.shade800);
       }
     } catch (e, st) {
       debugPrint("Logout error: $e\n$st");
-      Get.snackbar(
-        'Network Error',
-        'Unable to logout. Clearing local session.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade800,
-      );
+      Get.snackbar('Network Error', 'Unable to logout. Clearing local session.', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.shade50, colorText: Colors.red.shade800);
 
-      // fallback: clear local session
       await authService.clearToken();
       await _secureStorage.delete(key: 'user_id');
       Future.delayed(const Duration(milliseconds: 300), () {
