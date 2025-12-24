@@ -33,6 +33,22 @@ class DashboardView extends GetView<DashboardController> {
           ),
         ),
       ),
+
+      // drawer: CustomDrawer(
+      //   name: 'John Doe',
+      //   role: 'Student',
+      //   email: 'john.doe@email.com',
+      //   onEditProfile: () {
+      //     // open profile page
+      //     Get.toNamed('/profile');
+      //     _scaffoldKey.currentState?.closeDrawer();
+      //   },
+      //   onLogout: () {
+      //     // optional override
+      //     Get.offAllNamed('/login');
+      //   },
+      // ),
+
       drawer: CustomDrawer(
         name: 'John Doe',
         role: 'Student',
@@ -163,12 +179,16 @@ class DashboardView extends GetView<DashboardController> {
         _iconActionButton(
           icon: Icons.school_rounded,
           label: 'Standards',
-          onTap: () => Get.to(() => const AllStandardsView(), binding: AllStandardsBinding()),
+          onTap: () => Get.to(() => 
+          const AllStandardsView(), 
+          binding: AllStandardsBinding()),
         ),
         _iconActionButton(
           icon: Icons.emoji_events_rounded,
           label: 'Competitive Exam',
-          onTap: () => Get.to(() => const MoreCompetitiveExamsView(), binding: MoreCompetitiveExamsBinding()),
+          onTap: () => Get.to(() => 
+          const MoreCompetitiveExamsView(), 
+          binding: MoreCompetitiveExamsBinding()),
         ),
       ],
     );
@@ -203,6 +223,55 @@ class DashboardView extends GetView<DashboardController> {
       ),
     );
   }
+
+    // Widget _buildHeader(
+  //   BuildContext context,
+  //   DashboardController ctrl,
+  //   bool isMobile,
+  //   bool isDesktop,
+  //   GlobalKey<ScaffoldState> scaffoldKey, // <— add this argument
+  // ) {
+  //   return Row(
+  //     children: [
+  //       // hamburger
+  //       GestureDetector(
+  //         onTap: () => scaffoldKey.currentState?.openDrawer(),
+  //         child: Container(
+  //           padding: const EdgeInsets.all(8),
+  //           decoration: BoxDecoration(
+  //             color: AppColors.textcolor,
+  //             borderRadius: BorderRadius.circular(6),
+  //           ),
+  //           child: const Icon(Icons.menu, color: Colors.white, size: 18),
+  //         ),
+  //       ),
+  //       const SizedBox(width: 12),
+
+  //       // Title
+  //       Text(
+  //         'YB Nexus',
+  //         style: TextStyle(
+  //           color: AppColors.textcolor,
+  //           fontSize: isMobile ? 16 : 20,
+  //           fontWeight: FontWeight.w700,
+  //         ),
+  //       ),
+  //       const Spacer(),
+
+  //       // Welcome text
+  //       Obx(
+  //         () => Text(
+  //           ctrl.welcome.value,
+  //           style: TextStyle(
+  //             color: Colors.grey[700],
+  //             fontSize: isMobile ? 12 : 14,
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+
 
   Widget _buildProgressCard(DashboardController ctrl, bool isMobile, double sectionTitleSize, double bodyTextSize) {
     final double ringSize = isMobile ? 96 : 116;
@@ -290,6 +359,85 @@ class DashboardView extends GetView<DashboardController> {
       ),
     );
   }
+
+    // Widget _buildProgressCard(DashboardController ctrl, bool isMobile) {
+  //   return Container(
+  //     width: double.infinity,
+  //     padding: EdgeInsets.all(isMobile ? 12 : 18),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(12),
+  //       border: Border.all(color: Colors.grey.shade200),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.02),
+  //           blurRadius: 8,
+  //           offset: const Offset(0, 4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           'Your Progress',
+  //           style: TextStyle(
+  //             fontSize: isMobile ? 14 : 16,
+  //             fontWeight: FontWeight.w700,
+  //           ),
+  //         ),
+  //         const SizedBox(height: 12),
+  //         Obx(() {
+  //           if (!ctrl.hasProgress.value) {
+  //             return Container(
+  //               height: 110,
+  //               width: double.infinity,
+  //               decoration: BoxDecoration(
+  //                 borderRadius: BorderRadius.circular(10),
+  //                 color: Colors.grey.shade50,
+  //                 border: Border.all(color: Colors.grey.shade200),
+  //               ),
+  //               child: Center(
+  //                 child: Column(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: [
+  //                     Icon(
+  //                       Icons.bar_chart_outlined,
+  //                       size: 30,
+  //                       color: Colors.grey.shade400,
+  //                     ),
+  //                     const SizedBox(height: 8),
+  //                     Text(
+  //                       'No Progress Data',
+  //                       style: TextStyle(color: Colors.grey.shade600),
+  //                     ),
+  //                     Text(
+  //                       'Take analytics',
+  //                       style: TextStyle(color: Colors.blue.shade300),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             );
+  //           } else {
+  //             final percent = (ctrl.progressPercent.value * 100).toInt();
+  //             return Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 LinearProgressIndicator(value: ctrl.progressPercent.value),
+  //                 const SizedBox(height: 8),
+  //                 Text(
+  //                   '$percent% completed',
+  //                   style: const TextStyle(fontWeight: FontWeight.w600),
+  //                 ),
+  //               ],
+  //             );
+  //           }
+  //         }),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildRecentActivity(DashboardController ctrl, bool isMobile, double titleSize, double bodySize, double smallSize) {
     IconData _getIcon(String title) {

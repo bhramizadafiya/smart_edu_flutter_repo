@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smarted/modules/onpapertest/binding/onpapertest_binding.dart';
 import 'package:smarted/modules/onpapertest/view/onpapertest_view.dart';
+import 'package:smarted/theme/design_system.dart';
 
 enum TestMode { online, paper }
 
@@ -18,47 +19,54 @@ class TestModeController extends GetxController {
 
   // Online Test Data
   final Map<String, dynamic> onlineTestData = {
-    "title": "Online Test",
-    "subtitle": "Take the test directly on your device with real-time features and instant results",
-    "icon": Icons.computer,
-    "color": const Color(0xFF2196F3),
-    'features': [
+  "title": "Online Test",
+  "subtitle": "Take the test directly on your device with real-time features and instant results",
+  "icon": Icons.computer,
+  "gradientColors": [
+    AppColors.gradientStartBlue,   // Top: Bright blue (0xFF2E88FF)
+    AppColors.gradientMiddleBlue,  // Middle: Rich blue (0xFF1B6BE0)
+    AppColors.gradientEndBlue,     // Bottom: Deep blue (0xFF0D47A1)
+  ],
+  "features": [
     {
-      'text': 'Live timer with warnings',
-      'icon': Icons.timer,
-      'color': const Color(0xFF2196F3),
+      "text": "Live timer with warnings",
+      "icon": Icons.timer,
+      "color": const Color(0xFF2196F3),
     },
     {
-      'text': 'Instant results & analysis',
-      'icon': Icons.insights_rounded,
-      'color': const Color(0xFF2196F3),
+      "text": "Instant results & analysis",
+      "icon": Icons.insights_rounded,
+      "color": const Color(0xFF2196F3),
     },
     {
-      'text': 'Question review & navigation',
-      'icon': Icons.swap_horiz_rounded,
-      'color': const Color(0xFF2196F3),
+      "text": "Question review & navigation",
+      "icon": Icons.swap_horiz_rounded,
+      "color": const Color(0xFF2196F3),
     },
     {
-      'text': 'Performance analytics',
-      'icon': Icons.bar_chart_rounded,
-      'color': const Color(0xFF2196F3),
+      "text": "Performance analytics",
+      "icon": Icons.bar_chart_rounded,
+      "color": const Color(0xFF2196F3),
     },
-    ],
-    "pros": ["Automatic scoring", "Save progress", "Detailed analytics"],
-    "cons": ["Requires stable internet", "Screen-based reading"],
-    "buttonText": "Start Online Test"
-  };
+  ],
+  "pros": ["Automatic scoring", "Save progress", "Detailed analytics"],
+  "cons": ["Requires stable internet", "Screen-based reading"],
+  "buttonText": "Start Online Test"
+};
 
   // On-Paper Test Data
   final Map<String, dynamic> paperTestData = {
-    "title": "On-Paper Test",
-    "tag": "Traditional",
-    "subtitle": "Download and print the test paper for traditional exam-style practice with manual timing",
-    "icon": Icons.description,
-    "color": const Color.fromARGB(255, 34, 120, 90),
-
-    "buttonText": "Generate Paper Test"
-  };
+  "title": "On-Paper Test",
+  "tag": "Traditional",
+  "subtitle": "Download and print the test paper for traditional exam-style practice with manual timing",
+  "icon": Icons.description,
+  "gradientColors": [
+    AppColors.gradientStart,    // Top: Light Mint Green (0xFF66D1B2)
+    AppColors.gradientMiddle,   // Middle: Medium Teal (0xFF3BAA8F)
+    AppColors.gradientEnd,      // Bottom: Deep Green Teal (0xFF1C524A)
+  ],
+  "buttonText": "Generate Paper Test"
+};
 
   void selectMode(TestMode mode) {
     selectedMode.value = mode;

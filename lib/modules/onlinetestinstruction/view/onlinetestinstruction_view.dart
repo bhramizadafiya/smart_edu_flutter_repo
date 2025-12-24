@@ -1,6 +1,7 @@
 // lib/modules/onlinetestinstruction/views/onlinetestinstruction_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smarted/theme/design_system.dart';
 import '../controller/onlinetestinstruction_controller.dart';
 
 class OnlineTestInstructionView extends GetView<OnlineTestInstructionController> {
@@ -36,30 +37,50 @@ class OnlineTestInstructionView extends GetView<OnlineTestInstructionController>
         child: Column(
           children: [
             // Top Icon + Title
-            Column(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 31, 143, 255),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.computer_rounded, size: 50, color: Colors.white),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Online Test Instructions",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color.fromARGB(255, 12, 69, 37)),
-                ),
-                const SizedBox(height: 8),
-                Obx(() => Text(
-                      controller.mainInstruction.value,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 15, color: Colors.black54, height: 1.5),
-                    )),
-              ],
-            ),
+            Center(
+  child: Column(
+    mainAxisSize: MainAxisSize.min, // Prevents Column from taking full height
+    children: [
+    Container(
+  width: 80,
+  height: 80,
+  decoration: const BoxDecoration(
+    shape: BoxShape.circle,
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        AppColors.gradientStartBlue,   // Top: Bright dark-blue
+        AppColors.gradientMiddleBlue,  // Middle: Rich mid-blue
+        AppColors.gradientEndBlue,     // Bottom: Very deep blue
+      ],
+    ),
+  ),
+  child: const Icon(
+    Icons.computer_rounded,
+    size: 50,
+    color: Colors.white,
+  ),
+),
+      const SizedBox(height: 16),
+      const Text(
+        "Online Test Instructions",
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          color: Color.fromARGB(255, 12, 69, 37),
+        ),
+        textAlign: TextAlign.center, // Ensures title is centered if it wraps
+      ),
+      const SizedBox(height: 8),
+      Obx(() => Text(
+            controller.mainInstruction.value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 15, color: Colors.black54, height: 1.5),
+          )),
+    ],
+  ),
+),
 
             const SizedBox(height: 15),
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smarted/modules/onlinetestinstruction/binding/onlinetestinstruction_binding.dart';
 import 'package:smarted/modules/onlinetestinstruction/view/onlinetestinstruction_view.dart';
+import 'package:smarted/theme/design_system.dart';
 import '../controller/testmode_controller.dart';
 
 class TestModeView extends GetView<TestModeController> {
@@ -57,7 +58,7 @@ class TestModeView extends GetView<TestModeController> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Select how you want to take your mock test – \n online with instant feedback or on paper for\ntraditional practice",
+                    "Select how you want to take your mock test - online with instant feedback or on paper for traditional practice",
                     style: TextStyle(fontSize: 14.5, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
@@ -171,11 +172,29 @@ class TestModeView extends GetView<TestModeController> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: const Color.fromARGB(255, 29, 146, 242),
-                    child: Icon(data['icon'] as IconData, color: Colors.white, size: 38),
-                  ),
+                 CircleAvatar(
+  radius: 32,
+  backgroundColor: Colors.transparent,
+  child: Container(
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.gradientStartBlue,
+          AppColors.gradientMiddleBlue,
+          AppColors.gradientEndBlue,
+        ],
+      ),
+    ),
+    child: Icon(
+      data['icon'] as IconData,
+      color: Colors.white,
+      size: 38,
+    ),
+  ),
+),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -283,11 +302,11 @@ class TestModeView extends GetView<TestModeController> {
         backgroundColor: color,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    
-      ),
-    ),
-  ),
-),
+
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -311,7 +330,6 @@ class TestModeView extends GetView<TestModeController> {
 
   Widget _buildPaperSection() {
     final data = controller.paperTestData;
-  
 
     return Column(
       children: [
