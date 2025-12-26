@@ -5,28 +5,33 @@ class ApiEnvironment {
 }
 
 class ApiConfig {
-  // Base URL (you can switch environments easily here)
+  // Use production for live server
   static const String baseUrl = ApiEnvironment.production;
 
-  // Authentication endpoints
+  // Authentication
   static const String register = '$baseUrl/register';
   static const String login = '$baseUrl/login';
   static const String logout = '$baseUrl/logout';
   static const String verifyEmail = '$baseUrl/verify-email';
   static const String resendVerification = '$baseUrl/resend-verification';
-
   static const String authtoken = '$baseUrl/generate-token';
 
-  // Future endpoints for example
+  // Password
   static const String forgotPassword = '$baseUrl/forgot-password';
   static const String resetPassword = '$baseUrl/reset-password';
 
-  static const String getAllStandards = '$baseUrl/get-all-standards'; // Added as per your API
-
+  // Standards & Subjects
+  static const String getAllStandards = '$baseUrl/get-all-standards';
   static const String getSubjectsByStandardId = '$baseUrl/get-subjects-by-standard-id';
-static const String getAllLanguages = '$baseUrl/get-all-languages';
-static const String uploadResource = '$baseUrl/upload-resource';
+  static const String getAllLanguages = '$baseUrl/get-all-languages';
 
-  // You can also define dynamic URLs like:
-  // static String userProfile(String userId) => '$baseUrl/user/$userId';
-}
+ // ✅ FETCH LIST
+   static const String getMyResources = "$baseUrl/get-my-resources"; 
+  // ✅ UPDATE
+  static const String updateResource = "$baseUrl/update-resource";
+
+  // ✅ UPLOAD
+  static const String uploadResource = "$baseUrl/upload-resource";
+
+  static const String filterResources = '$baseUrl/filter-resources-with-search';
+  }

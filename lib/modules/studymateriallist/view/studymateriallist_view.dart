@@ -1,18 +1,28 @@
+// views/studymateriallist_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/studymateriallist_controller.dart';
 import '../../../widgets/custom_appbar.dart';
 import '../../../theme/design_system.dart';
 
-class DeleteResourceDialog extends StatelessWidget {
+class DeleteResourceDialog extends StatefulWidget {
   final String resourceName;
-  final VoidCallback onDelete;
+  final String resourceId;
+  final StudyMaterialListController controller;
 
   const DeleteResourceDialog({
     super.key,
     required this.resourceName,
-    required this.onDelete,
+    required this.resourceId,
+    required this.controller,
   });
+
+  @override
+  State<DeleteResourceDialog> createState() => _DeleteResourceDialogState();
+}
+
+class _DeleteResourceDialogState extends State<DeleteResourceDialog> {
+  var isDeleting = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -34,35 +44,49 @@ class DeleteResourceDialog extends StatelessWidget {
             const SizedBox(height: 16),
             const Text('Delete Resource?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87)),
             const SizedBox(height: 12),
-            Text('Are you sure you want to delete "$resourceName"?', textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: Colors.black54, height: 1.4)),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.grey.shade100,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    onDelete();
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Delete Resource', style: TextStyle(color: Colors.white)),
-                ),
-              ],
+            Text(
+              'Are you sure you want to delete "${widget.resourceName}"?\nThis action cannot be undone.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15, color: Colors.black54, height: 1.4),
             ),
+            const SizedBox(height: 24),
+            Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: isDeleting.value ? null : () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.grey.shade100,
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: isDeleting.value
+                          ? null
+                          : () async {
+                              isDeleting.value = true;
+                              await widget.controller.deleteResource(widget.resourceId);
+                              isDeleting.value = false;
+                              if (mounted) Navigator.pop(context);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade600,
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: isDeleting.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text('Delete Resource', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                )),
           ],
         ),
       ),
@@ -72,12 +96,12 @@ class DeleteResourceDialog extends StatelessWidget {
 
 class EditResourceDialog extends StatefulWidget {
   final Map<String, dynamic> resourceData;
-  final VoidCallback onSave;
+  final StudyMaterialListController controller;
 
   const EditResourceDialog({
     super.key,
     required this.resourceData,
-    required this.onSave,
+    required this.controller,
   });
 
   @override
@@ -89,20 +113,25 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
   late TextEditingController descriptionController;
   late String selectedCategory;
 
-  final categories = [
-    'Lecture Notes',
-    'Assignments',
-    'Reference',
-    'Syllabus',
-    'Other',
+  final List<String> categories = [
+    'Textbook',
+    'Notes',
+    'Reference Material',
+    'Question Bank',
   ];
+
+  var isSaving = false.obs;
 
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController(text: widget.resourceData['title']);
     descriptionController = TextEditingController(text: widget.resourceData['subtitle']);
-    selectedCategory = widget.resourceData['type'].split(' • ').first;
+    selectedCategory = widget.resourceData['subtitle'] == 'No category'
+        ? categories.first
+        : (categories.contains(widget.resourceData['subtitle'])
+            ? widget.resourceData['subtitle']
+            : categories.first);
   }
 
   @override
@@ -139,7 +168,10 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
                       const SizedBox(width: 8),
                       Text(
                         'Edit Resource',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 22),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 22,
+                            ),
                       ),
                     ],
                   ),
@@ -157,7 +189,7 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
                 controller: titleController,
                 decoration: InputDecoration(
                   hintText: 'Enter resource title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.bluecolor, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -172,7 +204,7 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
                 maxLines: 3,
                 decoration: InputDecoration(
                   hintText: 'Enter description',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.bluecolor, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -187,7 +219,7 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
                 items: categories.map((e) => DropdownMenuItem<String>(value: e, child: Text(e))).toList(),
                 onChanged: (val) => setState(() => selectedCategory = val!),
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.bluecolor, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -209,21 +241,38 @@ class _EditResourceDialogState extends State<EditResourceDialog> {
                     child: const Text('Cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.resourceData['title'] = titleController.text.trim();
-                      widget.resourceData['subtitle'] = descriptionController.text.trim();
-                      widget.resourceData['type'] = '$selectedCategory • ${widget.resourceData['type'].split(' • ').last}';
-                      widget.onSave();
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.textcolor,
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Save Changes', style: TextStyle(color: Colors.white)),
-                  ),
+                  Obx(() => ElevatedButton(
+                        onPressed: isSaving.value
+                            ? null
+                            : () async {
+                                if (titleController.text.trim().isEmpty) {
+                                  Get.snackbar('Error', 'Please enter a resource title');
+                                  return;
+                                }
+
+                                isSaving.value = true;
+                                await widget.controller.updateResource(
+                                  resourceId: widget.resourceData['id'],
+                                  title: titleController.text.trim(),
+                                  description: descriptionController.text.trim(),
+                                  category: selectedCategory,
+                                );
+                                isSaving.value = false;
+                                if (mounted) Navigator.pop(context);
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.textcolor,
+                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: isSaving.value
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Save Changes', style: TextStyle(color: Colors.white)),
+                      )),
                 ],
               ),
             ],
@@ -368,7 +417,7 @@ class StudyMaterialListBlending {
                       context: context,
                       builder: (_) => EditResourceDialog(
                         resourceData: data,
-                        onSave: () => controller.applyFilterAndSort(),
+                        controller: controller,
                       ),
                     );
                   } else if (value == 'delete') {
@@ -376,10 +425,8 @@ class StudyMaterialListBlending {
                       context: context,
                       builder: (_) => DeleteResourceDialog(
                         resourceName: data['title'],
-                        onDelete: () {
-                          controller.studyMaterials.remove(data);
-                          controller.applyFilterAndSort();
-                        },
+                        resourceId: data['id'],
+                        controller: controller,
                       ),
                     );
                   }
@@ -394,11 +441,41 @@ class StudyMaterialListBlending {
           SizedBox(height: height * 0.012),
           Row(
             children: [
-              Expanded(child: SizedBox(height: btnHeight, child: OutlinedButton.icon(onPressed: () => Get.toNamed('/chapters-list'), icon: Icon(Icons.add_rounded, size: btnHeight * 0.5, color: Colors.orange.shade700), label: Text('Chapters', style: TextStyle(fontSize: btnFontSize, color: Colors.orange.shade700, fontWeight: FontWeight.w600)), style: outlineOrange))),
+              Expanded(
+                child: SizedBox(
+                  height: btnHeight,
+                  child: OutlinedButton.icon(
+                    onPressed: () => Get.toNamed('/chapters-list'),
+                    icon: Icon(Icons.add_rounded, size: btnHeight * 0.5, color: Colors.orange.shade700),
+                    label: Text('Chapters', style: TextStyle(fontSize: btnFontSize, color: Colors.orange.shade700, fontWeight: FontWeight.w600)),
+                    style: outlineOrange,
+                  ),
+                ),
+              ),
               SizedBox(width: width * 0.03),
-              Expanded(child: SizedBox(height: btnHeight, child: OutlinedButton.icon(onPressed: () => Get.toNamed('/chatscreen'), icon: Icon(Icons.chat_bubble_rounded, size: btnHeight * 0.5, color: AppColors.bluecolor), label: Text('Chat', style: TextStyle(fontSize: btnFontSize, color: AppColors.bluecolor, fontWeight: FontWeight.w600)), style: filledBlue))),
+              Expanded(
+                child: SizedBox(
+                  height: btnHeight,
+                  child: OutlinedButton.icon(
+                    onPressed: () => Get.toNamed('/chatscreen'),
+                    icon: Icon(Icons.chat_bubble_rounded, size: btnHeight * 0.5, color: AppColors.bluecolor),
+                    label: Text('Chat', style: TextStyle(fontSize: btnFontSize, color: AppColors.bluecolor, fontWeight: FontWeight.w600)),
+                    style: filledBlue,
+                  ),
+                ),
+              ),
               SizedBox(width: width * 0.03),
-              Expanded(child: SizedBox(height: btnHeight, child: OutlinedButton.icon(onPressed: () {}, icon: Icon(Icons.autorenew_rounded, size: btnHeight * 0.5, color: AppColors.textcolor), label: Text('Process', style: TextStyle(fontSize: btnFontSize, color: AppColors.textcolor, fontWeight: FontWeight.w600)), style: filledGreen))),
+              Expanded(
+                child: SizedBox(
+                  height: btnHeight,
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: Icon(Icons.autorenew_rounded, size: btnHeight * 0.5, color: AppColors.textcolor),
+                    label: Text('Process', style: TextStyle(fontSize: btnFontSize, color: AppColors.textcolor, fontWeight: FontWeight.w600)),
+                    style: filledGreen,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -447,23 +524,29 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Study Resources (${controller.filteredMaterials.length})", style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.w600, color: AppColors.textcolor)),
-                  SizedBox(
+                 Obx(() => Text(
+      "Study Resources (${controller.filteredMaterials.length})",
+      style: TextStyle(
+        fontSize: width * 0.045,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textcolor,
+      ),
+    )), SizedBox(
                     width: 100,
-                    child: Obx(() => TextButton.icon(
-                          onPressed: controller.onSortPressed,
-                          icon: Icon(
-                            controller.sortAscending.value ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                            size: 18,
-                            color: Colors.black87,
-                          ),
-                          label: const Text("Sort", style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        )),
+                    child: TextButton.icon(
+                      onPressed: controller.onSortPressed,
+                      icon: Icon(
+                        controller.sortOrder.value == 'asc' ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                        size: 18,
+                        color: Colors.black87,
+                      ),
+                      label: const Text("Sort", style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -483,12 +566,9 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
                         decoration: const InputDecoration(hintText: "Search books, authors, subjects...", border: InputBorder.none, hintStyle: TextStyle(color: Colors.grey)),
                       ),
                     ),
-                    Obx(() => controller.searchQuery.value.isNotEmpty
-                        ? GestureDetector(onTap: () {
-                            controller.clearSearch();
-                            FocusScope.of(context).unfocus();
-                          }, child: const Icon(Icons.clear, color: Colors.grey))
-                        : const SizedBox.shrink()),
+                    controller.searchQuery.value.isNotEmpty
+                        ? GestureDetector(onTap: controller.clearSearch, child: const Icon(Icons.clear, color: Colors.grey))
+                        : const SizedBox.shrink(),
                   ],
                 ),
               ),
@@ -501,6 +581,7 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
                         child: Text(
                           controller.searchQuery.value.isEmpty ? "No study materials available." : "No results found for '${controller.searchQuery.value}'",
                           style: TextStyle(fontSize: width * 0.04, color: Colors.grey.shade600),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     )
@@ -520,7 +601,6 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
     );
   }
 }
-
 
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';

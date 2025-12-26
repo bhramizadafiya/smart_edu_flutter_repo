@@ -1,7 +1,7 @@
 // lib/modules/coresubjects/controller/coresubjects_controller.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/api_endpoints.dart';
 import '../../../utils/auth_token_service.dart';
@@ -108,6 +108,7 @@ class CoreSubjectsController extends GetxController {
 
           for (var item in data) {
             final String subjectName = item['subject_name']?.toString().trim() ?? 'Unknown';
+            final String subjectId = item['subject_id']?.toString() ?? ''; // ← Added
 
             if (subjectName.isEmpty || subjectName == 'null') continue;
 
@@ -119,6 +120,7 @@ class CoreSubjectsController extends GetxController {
               "subtitle": subjectConfig['subtitle'],
               "color": subjectConfig['color'],
               "gradientColors": subjectConfig['gradientColors'],
+              "subject_id": subjectId, // ← Added
             });
           }
 
@@ -218,7 +220,12 @@ class CoreSubjectsController extends GetxController {
     }
   }
 
-  void onSubjectTap(String subjectName) {
-    Get.toNamed('/uploadresource', arguments: subjectName);
+  /// Called when a subject card is tapped
+  void onSubjectTap(String subjectName, String subjectId) {
+    Get.toNamed('/uploadresource', arguments: {
+      'standard_id': standardId,
+      'subject_id': subjectId,
+      'subject_name': subjectName,
+    });
   }
 }

@@ -119,23 +119,28 @@ class UploadResourceController extends GetxController {
   // controllers/uploadresource_controller.dart
 
 void onFeatureTap(int index) {
+
+  final args = Get.arguments as Map<String, dynamic>?;
   switch (index) {
-   case 0: // Upload Resources → Study Materials List
-      // Put the controller first, then navigate
-      Get.put(StudyMaterialListController());   // This line fixes the crash
-      Get.to(() => const StudyMaterialListView());
+    case 0: // Upload Resources
+      Get.put(StudyMaterialListController());
+      Get.to(() => const StudyMaterialListView(), arguments: {
+        'standard_id': args?['standard_id'],
+        'subject_id': args?['subject_id'],
+        'subject_name': args?['subject_name'],
+      });
       break;
 
-    case 1: // AI Chat → Open Chat Screen
-      Get.put(LanguageSelectionController());           // Put the CONTROLLER
-      Get.to(() => const LanguageSelectionView());      // Navigate to View
+    // Other cases remain the same
+    case 1: // AI Chat
+      Get.put(LanguageSelectionController());
+      Get.to(() => const LanguageSelectionView());
       break;
 
     case 2: // Mock Test
-    Get.put(MockTestController());
-    Get.to(()=> const MockTestView());
- //   Get.toNamed('/mocktest');
-    //  break;
+      Get.put(MockTestController());
+      Get.to(() => const MockTestView());
+      break;
 
     case 3: // JEE/NEET Exams
       Get.toNamed('/competitive-exams');
@@ -145,7 +150,7 @@ void onFeatureTap(int index) {
       Get.toNamed('/languageselection');
   }
 
-  // Show snackbar
+  // Snackbar remains the same
   Get.snackbar(
     "Feature Selected",
     features[index].title,

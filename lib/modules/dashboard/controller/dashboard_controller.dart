@@ -503,9 +503,12 @@ class DashboardController extends GetxController {
   }
 
   void openStandard(StandardItem item) {
-    Get.snackbar('Standard', item.title, snackPosition: SnackPosition.BOTTOM);
-    Get.toNamed('/coresubjects');
-  }
+  Get.toNamed('/coresubjects', arguments: {
+    'classNumber': item.badge,
+    'classTitle': item.title,
+    'standard_id': item.standardId, // ← Critical: Pass standard_id
+  });
+}
 
   void selectStandard(StandardItem standard) {
     Get.snackbar("Selected", "${standard.title} selected", snackPosition: SnackPosition.BOTTOM);

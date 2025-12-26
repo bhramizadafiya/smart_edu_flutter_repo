@@ -231,99 +231,122 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
     );
   }
 
-  Widget _buildSubjectCard(
-    Map<String, dynamic> s, {
-    required double iconSize,
-    required double cardPadding,
-    required double titleFontSize,
-    required double subtitleFontSize,
-  }) {
-    final String title = s["title"];
-    final String subtitle = s["subtitle"];
-    final List<Color> iconGradient = List<Color>.from(s["gradientColors"]);
+ Widget _buildSubjectCard(
+  Map<String, dynamic> s, {
+  required double iconSize,
+  required double cardPadding,
+  required double titleFontSize,
+  required double subtitleFontSize,
+}) {
+  final String title = s["title"] ?? 'Unknown Subject';
+  final String subtitle = s["subtitle"] ?? '';
+  final List<Color> iconGradient = List<Color>.from(s["gradientColors"] ?? [
+    const Color(0xFF66D1B2),
+    const Color(0xFF3BAA8F),
+    const Color(0xFF1C524A),
+  ]);
 
-    return GestureDetector(
-      onTap: () => controller.onSubjectTap(title),
-      child: Container(
-        padding: EdgeInsets.all(cardPadding),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
-            ),
-          ],
+  // Safely get subject_id – critical for upload flow
+  final String subjectId = s["subject_id"]?.toString() ?? '';
+
+  return GestureDetector(
+  onTap: () {
+    if (subjectId.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Subject ID not available. Cannot proceed.',
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+      );
+      return;
+    }
+
+    controller.onSubjectTap(title, subjectId); // Calls onSubjectTap with title and subjectId
+  },
+  child: Container(
+    padding: EdgeInsets.all(cardPadding),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.grey.shade200, width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.12),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
         ),
-        child: Row(
-          children: [
-            // Gradient Circle
-            Container(
-              width: iconSize,
-              height: iconSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(colors: iconGradient),
-              ),
-              child: Center(
-                child: Icon(
-                  {
-                    "Mathematics": Icons.calculate_rounded,
-                    "Maths": Icons.calculate_rounded,
-                    "Science": Icons.science_rounded,
-                    "Physics": Icons.biotech_rounded,
-                    "Chemistry": Icons.biotech_rounded,
-                    "Biology": Icons.local_florist_rounded,
-                    "English": Icons.menu_book_rounded,
-                    "Hindi": Icons.record_voice_over_rounded,
-                    "Sanskrit": Icons.auto_stories_rounded,
-                    "Social Science": Icons.public_rounded,
-                    "IT": Icons.computer_rounded,
-                  }[title] ?? Icons.book_rounded,
-                  size: iconSize * 0.52,
-                  color: Colors.white,
+      ],
+    ),
+    child: Row(
+      children: [
+        // Gradient Circle with Icon
+        Container(
+          width: iconSize,
+          height: iconSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(colors: iconGradient),
+          ),
+          child: Center(
+            child: Icon(
+              {
+                "Mathematics": Icons.calculate_rounded,
+                "Maths": Icons.calculate_rounded,
+                "Physics": Icons.biotech_rounded,
+                "Chemistry": Icons.biotech_rounded,
+                "Biology": Icons.local_florist_rounded,
+                "English": Icons.menu_book_rounded,
+                "Hindi": Icons.record_voice_over_rounded,
+                "Sanskrit": Icons.auto_stories_rounded,
+                "Social Science": Icons.public_rounded,
+                "IT": Icons.computer_rounded,
+              }[title] ?? Icons.book_rounded,
+              size: iconSize * 0.52,
+              color: Colors.white,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF0A3D33),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: titleFontSize,
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF0A3D33),
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: subtitleFontSize,
-                      height: 1.45,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: subtitleFontSize,
+                  height: 1.45,
+                  color: Colors.grey[700],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: titleFontSize * 0.85,
-              color: const Color(0xFF3BAA8F),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+
+        Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: titleFontSize * 0.85,
+          color: const Color(0xFF3BAA8F),
+        ),
+      ],
+    ),
+  ),
+);
+}
 }

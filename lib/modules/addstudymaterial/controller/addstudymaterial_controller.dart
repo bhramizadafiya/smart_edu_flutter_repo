@@ -1,30 +1,26 @@
 // addstudymaterial_controller.dart
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
-import 'package:get/Get.dart';
-import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path;
-import 'package:file_picker/file_picker.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../utils/api_endpoints.dart';
-import '../../../utils/auth_token_service.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:mime/mime.dart';
 import '../../studymateriallist/controller/studymateriallist_controller.dart';
 
 class UploadFileModel {
-  final File file;
   final String name;
   final String type;
   final double sizeMB;
+  final File file;
   RxDouble progress = 0.0.obs;
   RxBool uploaded = false.obs;
 
   UploadFileModel({
-    required this.file,
     required this.name,
     required this.type,
     required this.sizeMB,
+    required this.file,
   });
 }
 
@@ -32,29 +28,57 @@ class AddStudyMaterialController extends GetxController {
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
 
-  final languageId = 'ybai_language_4m142x5lth'.obs;
+  final language = 'English'.obs;
+  final category = 'Textbook'.obs;
   final isPublic = true.obs;
 
   final RxList<UploadFileModel> files = <UploadFileModel>[].obs;
-  final Rxn<File> coverImageFile = Rxn<File>();
+  final Rxn<File> coverImage = Rxn<File>();
 
   final RxBool uploading = false.obs;
   final RxBool saving = false.obs;
 
-  final AuthTokenService authService = Get.find<AuthTokenService>();
+  final languages = ['English', 'Hindi', 'Gujarati', 'Spanish'];
+  final categories = [
+    'Textbook',
+    'Notes',
+    'Reference Material',
+    'Question Bank',
+  ];
 
-  String standardId = '';
-  String subjectId = '';
+  // Will be set from Get.arguments
+  late String standardId;
+  late String subjectId;
+
+  // Fixed language ID (change if it also needs to be dynamic)
+  final String languageId = 'ybai_language_4m142x5lth';
+
+  // Authorization token – in production, store securely
+  final String authToken = 'LP5XfmoNX0qGJOVmGzKUCt1yKejXyvEjLeHvVHfH';
 
   StudyMaterialListController? listController;
+
+  final dio.Dio _dio = dio.Dio();
 
   @override
   void onInit() {
     super.onInit();
 
     final args = Get.arguments as Map<String, dynamic>?;
-    standardId = args?['standard_id'] ?? '';
-    subjectId = args?['subject_id'] ?? '';
+
+    standardId = args?['standard_id'] as String? ?? '';
+    subjectId = args?['subject_id'] as String? ?? '';
+
+    if (standardId.isEmpty || subjectId.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Missing standard or subject information. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 5),
+      );
+    }
 
     if (Get.isRegistered<StudyMaterialListController>()) {
       listController = Get.find<StudyMaterialListController>();
@@ -62,207 +86,191 @@ class AddStudyMaterialController extends GetxController {
   }
 
   @override
-  void onReady() {
-    super.onReady();
-
-    if (standardId.isEmpty || subjectId.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please select a subject first',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-      );
-      Get.back();
-    }
+  void onClose() {
+    titleCtrl.dispose();
+    descCtrl.dispose();
+    super.onClose();
   }
 
-  Future<void> pickFile() async {
+  Future<void> pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
       type: FileType.custom,
       allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
     );
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      final sizeMB = file.lengthSync() / (1024 * 1024);
+    if (result != null) {
+      for (var platformFile in result.files) {
+        if (platformFile.path == null) continue;
 
-      final uploadFile = UploadFileModel(
-        file: file,
-        name: result.files.single.name,
-        type: path.extension(result.files.single.name).toUpperCase().replaceFirst('.', ''),
-        sizeMB: sizeMB,
-      );
+        final file = File(platformFile.path!);
+        final sizeMB = platformFile.size / (1024 * 1024);
+        final extension = platformFile.extension?.toUpperCase() ?? 'FILE';
 
-      files.clear();
-      files.add(uploadFile);
-      _simulateUpload(uploadFile);
-    }
-  }
-
-  void _simulateUpload(UploadFileModel file) {
-    uploading.value = true;
-    file.progress.value = 0.0;
-
-    Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      file.progress.value = (file.progress.value + 0.1).clamp(0.0, 1.0);
-      if (file.progress.value >= 1.0) {
-        file.uploaded.value = true;
-        timer.cancel();
-        uploading.value = false;
+        final uploadFile = UploadFileModel(
+          name: platformFile.name,
+          type: extension,
+          sizeMB: sizeMB,
+          file: file,
+        );
+        files.add(uploadFile);
       }
-    });
-  }
-
-  void removeFile(int index) {
-    files.removeAt(index);
+    }
   }
 
   Future<void> pickCoverImage(ImageSource source) async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 85);
+    final picked = await picker.pickImage(source: source, imageQuality: 85);
 
-    if (pickedFile != null) {
-      coverImageFile.value = File(pickedFile.path);
+    if (picked != null) {
+      coverImage.value = File(picked.path);
     }
   }
 
   void clearCoverImage() {
-    coverImageFile.value = null;
+    coverImage.value = null;
   }
 
-  void openCoverPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt_rounded, color: Colors.green),
-                title: const Text('Take Photo'),
-                onTap: () async {
-                  Get.back();
-                  await pickCoverImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_rounded, color: Colors.green),
-                title: const Text('From Gallery'),
-                onTap: () async {
-                  Get.back();
-                  await pickCoverImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.crop_square_rounded, color: Colors.grey),
-                title: const Text('Default (No Cover)'),
-                onTap: () {
-                  Get.back();
-                  clearCoverImage();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  void removeFile(int index) {
+    if (index >= 0 && index < files.length) {
+      files.removeAt(index);
+    }
   }
 
   Future<void> saveResource() async {
     if (titleCtrl.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please enter a title');
+      Get.snackbar('Error', 'Please enter a resource title',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
       return;
     }
 
     if (files.isEmpty) {
-      Get.snackbar('Error', 'Please upload a file');
+      Get.snackbar('Error', 'Please select at least one file',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
       return;
     }
 
-    if (!files.first.uploaded.value) {
-      Get.snackbar('Wait', 'File is still uploading');
+    if (standardId.isEmpty || subjectId.isEmpty) {
+      Get.snackbar('Error', 'Invalid standard or subject. Cannot upload.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
       return;
     }
 
     saving.value = true;
+    uploading.value = true;
 
     try {
-      final headers = await authService.getAuthHeaders();
-      final uri = Uri.parse(ApiConfig.uploadResource);
+      final formData = dio.FormData();
 
-      var request = http.MultipartRequest('POST', uri);
-      request.headers.addAll(headers);
+      formData.fields.addAll([
+        MapEntry('title', titleCtrl.text.trim()),
+        if (descCtrl.text.trim().isNotEmpty)
+          MapEntry('description', descCtrl.text.trim()),
+        MapEntry('category', category.value.toLowerCase()),
+        MapEntry('language_id', languageId),
+        MapEntry('is_public', isPublic.value.toString()),
+        MapEntry('standard_id', standardId),
+        MapEntry('subject_id', subjectId),
+      ]);
 
-      request.fields.addAll({
-        'title': titleCtrl.text.trim(),
-        'description': descCtrl.text.trim(),
-        'language_id': languageId.value,
-        'is_public': isPublic.value.toString(),
-        'standard_id': standardId,
-        'subject_id': subjectId,
-      });
-
-      final mainFile = files.first.file;
-      request.files.add(await http.MultipartFile.fromPath(
-        'file',
-        mainFile.path,
-        filename: files.first.name,
-      ));
-
-      if (coverImageFile.value != null) {
-        request.files.add(await http.MultipartFile.fromPath(
+      if (coverImage.value != null) {
+        formData.files.add(MapEntry(
           'cover_image',
-          coverImageFile.value!.path,
-          filename: path.basename(coverImageFile.value!.path),
+          await dio.MultipartFile.fromFile(
+            coverImage.value!.path,
+            filename: coverImage.value!.path.split('/').last,
+          ),
         ));
       }
 
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      for (var uploadFile in files) {
+        formData.files.add(MapEntry(
+          'file',
+          await dio.MultipartFile.fromFile(
+            uploadFile.file.path,
+            filename: uploadFile.name,
+          ),
+        ));
 
-      if (response.statusCode == 201) {
-        final jsonData = jsonDecode(response.body);
+        uploadFile.progress.value = 0.0;
+      }
+
+      final response = await _dio.post(
+        'http://smarted.ybaisolution.com/ybai/upload-resource',
+        data: formData,
+        options: dio.Options(
+          headers: {'Authorization': 'Bearer $authToken'},
+          contentType: 'multipart/form-data',
+        ),
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            final overallProgress = sent / total;
+            for (var f in files) {
+              f.progress.value = overallProgress;
+            }
+          }
+        },
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Mark files as uploaded
+        for (var f in files) {
+          f.uploaded.value = true;
+          f.progress.value = 1.0;
+        }
+
+        // === FIXED: Only refresh from server for accurate time & data ===
+        if (listController != null) {
+          listController!.refreshList();
+        }
+        // === END FIX ===
+
         Get.snackbar(
           'Success!',
-          jsonData['message'] ?? 'Resource uploaded successfully',
+          'Study material uploaded successfully',
+          snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green.shade100,
           colorText: Colors.green.shade900,
           duration: const Duration(seconds: 3),
         );
 
-        listController?.fetchMaterials();
+        // Reset form
+        titleCtrl.clear();
+        descCtrl.clear();
+        files.clear();
+        coverImage.value = null;
+        language.value = 'English';
+        category.value = 'Textbook';
+        isPublic.value = true;
 
-        _clearForm();
         Get.back();
       } else {
-        final jsonData = jsonDecode(response.body);
-        Get.snackbar('Error', jsonData['message'] ?? 'Upload failed');
+        throw 'Server error: ${response.statusCode}';
       }
     } catch (e) {
-      debugPrint('Upload error: $e');
-      Get.snackbar('Error', 'Network error. Please try again.');
+      String errorMsg = 'Upload failed';
+      if (e is dio.DioException) {
+        errorMsg += ': ${e.message}';
+        if (e.response?.data != null) {
+          errorMsg += ' - ${e.response?.data}';
+        }
+      } else {
+        errorMsg += ': $e';
+      }
+      Get.snackbar('Error', errorMsg,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900,
+          duration: const Duration(seconds: 5));
     } finally {
+      uploading.value = false;
       saving.value = false;
     }
-  }
-
-  void _clearForm() {
-    titleCtrl.clear();
-    descCtrl.clear();
-    files.clear();
-    coverImageFile.value = null;
-    isPublic.value = true;
-  }
-
-  @override
-  void onClose() {
-    titleCtrl.dispose();
-    descCtrl.dispose();
-    super.onClose();
   }
 }
