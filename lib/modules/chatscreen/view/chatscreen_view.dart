@@ -15,13 +15,20 @@ class ChatScreenView extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            // Properly clean up the controller before going back
+            ctrl.chatController.clear(); // Clear text field
+           
+            Get.delete<ChatScreenController>(); // This fully disposes the controller
+            Get.back();
+          },
         ),
         title: Row(
           children: [
@@ -93,11 +100,9 @@ class ChatScreenView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // AI rich response (headings, bullets, code blocks)
                             if (msg['widgets'] != null)
                               ...msg['widgets'] as List<Widget>,
 
-                            // User/welcome messages
                             if (msg['widgets'] == null && msg['text']?.isNotEmpty == true)
                               ctrl.buildInlineRichText(msg['text']),
 
@@ -136,11 +141,9 @@ class ChatScreenView extends StatelessWidget {
 
           // Input Bar
           Container(
-            padding: EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+            padding: const EdgeInsets.symmetric( // Simplified padding – resizeToAvoidBottomInset handles keyboard
+              horizontal: 12,
+              vertical: 12,
             ),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -215,7 +218,7 @@ class ChatScreenView extends StatelessWidget {
   }
 }
 
-// Black Code Block with Copy Button (Full Copy on Tap)
+// Black Code Block with Copy Button
 class CodeBlockWithCopy extends StatefulWidget {
   final String code;
   const CodeBlockWithCopy({super.key, required this.code});
@@ -234,7 +237,7 @@ class _CodeBlockWithCopyState extends State<CodeBlockWithCopy> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Code copied to clipboard!', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.black,
         duration: Duration(seconds: 2),
       ),
     );
@@ -255,7 +258,6 @@ class _CodeBlockWithCopyState extends State<CodeBlockWithCopy> {
       ),
       child: Stack(
         children: [
-          // Code content
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
             child: SingleChildScrollView(
@@ -271,7 +273,6 @@ class _CodeBlockWithCopyState extends State<CodeBlockWithCopy> {
               ),
             ),
           ),
-          // Top bar with copy button
           Container(
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -288,14 +289,14 @@ class _CodeBlockWithCopyState extends State<CodeBlockWithCopy> {
                     children: [
                       Icon(
                         _copied ? Icons.check_rounded : Icons.copy_rounded,
-                        color: _copied ? Colors.green : Colors.white70,
+                        color: _copied ? Colors.white : Colors.white70,
                         size: 18,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         _copied ? 'Copied!' : 'Copy',
                         style: TextStyle(
-                          color: _copied ? Colors.green : Colors.white70,
+                          color: _copied ? Colors.white : Colors.white70,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),

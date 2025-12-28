@@ -143,7 +143,7 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
                           // Loading / Error / Subjects List
                           Obx(() {
@@ -169,7 +169,7 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
                                         textAlign: TextAlign.center,
                                         style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
                                       ),
-                                      const SizedBox(height: 20),
+                                      const SizedBox(height: 16),
                                       ElevatedButton(
                                         onPressed: controller.fetchSubjects,
                                         child: const Text('Retry'),
@@ -196,7 +196,7 @@ class CoreSubjectsView extends GetView<CoreSubjectsController> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Available Subjects",
+                                  "Subjects",
                                   style: TextStyle(
                                     fontSize: _scale(context, 21, tablet: 1.1, desktop: 1.2),
                                     fontWeight: FontWeight.w900,

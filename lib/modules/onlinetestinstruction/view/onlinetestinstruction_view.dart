@@ -213,7 +213,7 @@ class OnlineTestInstructionView extends GetView<OnlineTestInstructionController>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1976D2),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 8,
+                 
                 ),
                 child: Obx(() => Text(
                       controller.continueButtonText.value,

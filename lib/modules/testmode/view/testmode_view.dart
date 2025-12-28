@@ -9,6 +9,16 @@ import '../controller/testmode_controller.dart';
 class TestModeView extends GetView<TestModeController> {
   const TestModeView({Key? key}) : super(key: key);
 
+  // Gradient Colors - Online (Blue)
+  static const Color onlineGradientStart = Color(0xFF2E88FF);   // Bright blue
+  static const Color onlineGradientMiddle = Color(0xFF1B6BE0);  // Rich mid-blue
+  static const Color onlineGradientEnd = Color(0xFF0D47A1);     // Deep blue
+
+  // Gradient Colors - Paper (Teal/Green)
+  static const Color paperGradientStart = Color(0xFF66D1B2);    // Light mint green
+  static const Color paperGradientMiddle = Color(0xFF3BAA8F);   // Medium teal
+  static const Color paperGradientEnd = Color(0xFF1C524A);      // Deep green-teal
+
   @override
   Widget build(BuildContext context) {
     Get.put(TestModeController());
@@ -24,7 +34,11 @@ class TestModeView extends GetView<TestModeController> {
         ),
         title: const Text(
           "Select Test Mode",
-          style: TextStyle(color: Color.fromARGB(221, 26, 60, 44), fontWeight: FontWeight.w900, fontSize: 18),
+          style: TextStyle(
+            color: Color.fromARGB(221, 26, 60, 44),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         bottom: PreferredSize(
@@ -35,14 +49,12 @@ class TestModeView extends GetView<TestModeController> {
 
       body: Column(
         children: [
-          // MAIN CONTENT — SCROLLABLE ONLY WHEN NEEDED
           Expanded(
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(), // Smooth scroll
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
               child: Column(
                 children: [
-                  // Header
                   Center(
                     child: CircleAvatar(
                       radius: 28,
@@ -67,13 +79,13 @@ class TestModeView extends GetView<TestModeController> {
                   _buildOnlineSection(),
                   const SizedBox(height: 25),
                   _buildPaperSection(),
-                  const SizedBox(height: 80), // Final spacing before bottom bar
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
           ),
 
-          // FIXED BOTTOM SETTINGS BAR (Always visible)
+          // FIXED BOTTOM SETTINGS BAR
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -150,9 +162,40 @@ class TestModeView extends GetView<TestModeController> {
     );
   }
 
+  // Helper to create gradient CircleAvatar
+  Widget _buildGradientCircle({required IconData icon, required List<Color> colors}) {
+    return CircleAvatar(
+      radius: 32,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: colors,
+          ),
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 38,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildOnlineSection() {
     final data = controller.onlineTestData;
-    final color = data['color'] as Color;
+
+    final List<Color> gradientColors = [
+      onlineGradientStart,
+      onlineGradientMiddle,
+      onlineGradientEnd,
+    ];
+
     final List<dynamic> features = data['features'] ?? [];
     final List<String> pros = (data['pros'] as List?)?.cast<String>() ?? [];
     final List<String> cons = (data['cons'] as List?)?.cast<String>() ?? [];
@@ -172,29 +215,11 @@ class TestModeView extends GetView<TestModeController> {
             children: [
               Row(
                 children: [
-                 CircleAvatar(
-  radius: 32,
-  backgroundColor: Colors.transparent,
-  child: Container(
-    decoration: const BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          AppColors.gradientStartBlue,
-          AppColors.gradientMiddleBlue,
-          AppColors.gradientEndBlue,
-        ],
-      ),
-    ),
-    child: Icon(
-      data['icon'] as IconData,
-      color: Colors.white,
-      size: 38,
-    ),
-  ),
-),
+                  // Gradient Circle for Online Mode
+                  _buildGradientCircle(
+                    icon: data['icon'] as IconData,
+                    colors: gradientColors,
+                  ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -216,10 +241,10 @@ class TestModeView extends GetView<TestModeController> {
               Text(data['subtitle'] as String, style: const TextStyle(fontSize: 14.8, color: Colors.black87, height: 1.4)),
               const SizedBox(height: 28),
               ...features.map<Widget>((item) {
-                if (item is Map) {
+                if (item is Map<String, dynamic>) {
                   final String text = item['text'] ?? "Feature";
-                  final IconData icon = (item['icon'] is IconData) ? item['icon'] : Icons.check_circle;
-                  final Color iconColor = (item['color'] is Color) ? item['color'] : color;
+                  final IconData icon = item['icon'] as IconData;
+                  final Color iconColor = item['color'] as Color;
                   return _buildFeatureRow(text: text, icon: icon, color: iconColor);
                 }
                 return const SizedBox.shrink();
@@ -230,7 +255,6 @@ class TestModeView extends GetView<TestModeController> {
 
         const SizedBox(height: 24),
 
-        // Pros & Consider — Outside Card
         if (pros.isNotEmpty || cons.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -280,29 +304,26 @@ class TestModeView extends GetView<TestModeController> {
 
         const SizedBox(height: 15),
 
-        // BEAUTIFUL CENTERED BUTTON (Not full width)
         Center(
-  child: SizedBox(
-    width: 300,
-    height: 58,
-    child: ElevatedButton.icon(
-      onPressed: () {
-        // This will navigate to OnlineTestInstructionView
-        Get.to(
-          () => const OnlineTestInstructionView(),
-          binding: OnlineTestInstructionBinding(),
-        );
-      },
-      icon: const Icon(Icons.play_arrow_rounded, size: 28, color: Colors.white),
-      label: Text(
-        data['buttonText'] as String,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-
+          child: SizedBox(
+            width: 300,
+            height: 58,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Get.to(
+                  () => const OnlineTestInstructionView(),
+                  binding: OnlineTestInstructionBinding(),
+                );
+              },
+              icon: const Icon(Icons.play_arrow_rounded, size: 28, color: Colors.white),
+              label: Text(
+                data['buttonText'] as String,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:  Color(0xFF1976D2), // Solid middle color for button
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ),
           ),
@@ -331,6 +352,12 @@ class TestModeView extends GetView<TestModeController> {
   Widget _buildPaperSection() {
     final data = controller.paperTestData;
 
+    final List<Color> gradientColors = [
+      paperGradientStart,
+      paperGradientMiddle,
+      paperGradientEnd,
+    ];
+
     return Column(
       children: [
         Container(
@@ -346,10 +373,10 @@ class TestModeView extends GetView<TestModeController> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: const Color.fromARGB(255, 37, 130, 97),
-                    child: Icon(data['icon'] as IconData, color: Colors.white, size: 38),
+                  // Gradient Circle for Paper Mode
+                  _buildGradientCircle(
+                    icon: data['icon'] as IconData,
+                    colors: gradientColors,
                   ),
                   const Spacer(),
                   Container(
@@ -382,13 +409,12 @@ class TestModeView extends GetView<TestModeController> {
             height: 58,
             child: ElevatedButton.icon(
               onPressed: controller.generatePaperTest,
-              icon: const Icon(Icons.download_rounded, size: 28,color:Colors.white),
+              icon: const Icon(Icons.download_rounded, size: 28, color: Colors.white),
               label: Text(data['buttonText'] as String, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 45, 166, 124),
+                backgroundColor: paperGradientMiddle, // Solid middle color for button
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                
               ),
             ),
           ),

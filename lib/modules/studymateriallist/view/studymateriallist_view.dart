@@ -339,13 +339,6 @@ class StudyMaterialListBlending {
       side: BorderSide(color: AppColors.orangecolor, width: 1.2),
     );
 
-    final ButtonStyle filledBlue = ElevatedButton.styleFrom(
-      minimumSize: Size(0, btnHeight),
-      padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      side: BorderSide(color: AppColors.bluecolor, width: 1.2),
-    );
-
     final ButtonStyle filledGreen = ElevatedButton.styleFrom(
       minimumSize: Size(0, btnHeight),
       padding: EdgeInsets.symmetric(horizontal: width * 0.02),
@@ -453,65 +446,66 @@ class StudyMaterialListBlending {
                 ),
               ),
               SizedBox(width: width * 0.03),
-             Expanded(
-  child: SizedBox(
-    height: btnHeight,
-    child: ElevatedButton.icon(
-      onPressed: () async {
-        // Optional: disable if still processing
-        if (data['status'].toString().toLowerCase() == 'processing') {
-          Get.snackbar('Processing', 'Please wait until processing is complete.');
-          return;
-        }
+              Expanded(
+                child: SizedBox(
+                  height: btnHeight,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      if (data['status'].toString().toLowerCase() == 'processing') {
+                        Get.snackbar('Processing', 'Please wait until processing is complete.');
+                        return;
+                      }
 
-        // Show loading dialog
-        Get.dialog(
-          const Center(child: CircularProgressIndicator()),
-          barrierDismissible: false,
-        );
+                      Get.dialog(
+                        const Center(child: CircularProgressIndicator()),
+                        barrierDismissible: false,
+                      );
 
-        final success = await controller.createResourceVector(data['id']);
+                      final success = await controller.createResourceVector(data['id']);
 
-        if (Get.isDialogOpen == true) Get.back();
+                      if (Get.isDialogOpen == true) Get.back();
 
-        if (success) {
-          Get.toNamed('/chatscreen', arguments: {
-            'resource_id': data['id'],
-            'resource_title': data['title'],
-            'pdf_path': data['pdf_path'],
-          });
-        }
-      },
-      icon: Icon(
-        Icons.chat_bubble_rounded,
-        size: btnHeight * 0.5,
-        color: data['status'].toString().toLowerCase() == 'processed'
-            ? Colors.white
-            : AppColors.bluecolor.withOpacity(0.7),
-      ),
-      label: Text(
-        data['status'].toString().toLowerCase() == 'processing'
-            ? 'Processing...'
-            : 'Chat',
-        style: TextStyle(
-          fontSize: btnFontSize,
-          color: data['status'].toString().toLowerCase() == 'processed'
-              ? Colors.white
-              : AppColors.bluecolor,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: data['status'].toString().toLowerCase() == 'processed'
-            ? AppColors.bluecolor
-            : AppColors.bluecolor.withOpacity(0.15),
-        padding: EdgeInsets.symmetric(horizontal: width * 0.02),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: BorderSide(color: AppColors.bluecolor, width: 1.2),
-      ),
-    ),
-  ),
-),
+                      if (success) {
+                        Get.toNamed('/chatscreen', arguments: {
+                          'resource_id': data['id'],
+                          'resource_title': data['title'],
+                          'pdf_path': data['pdf_path'],
+                        });
+                      }
+                    },
+                    icon: Icon(
+                      Icons.chat_bubble_rounded,
+                      size: btnHeight * 0.5,
+                      color: data['status'].toString().toLowerCase() == 'processed'
+                          ? AppColors.bluecolor
+                          : AppColors.bluecolor.withOpacity(0.9),
+                    ),
+                    label: Text(
+                      data['status'].toString().toLowerCase() == 'processing'
+                          ? 'Processing...'
+                          : 'Chat',
+                      style: TextStyle(
+                        fontSize: btnFontSize,
+                        color: data['status'].toString().toLowerCase() == 'processed'
+                            ? AppColors.bluecolor
+                            : AppColors.bluecolor.withOpacity(0.8),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // ← White background
+                      foregroundColor: AppColors.bluecolor,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.02),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(color: AppColors.bluecolor, width: 1.4),
+                      ),
+                      side: BorderSide(color: AppColors.bluecolor, width: 1.4),
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(width: width * 0.03),
               Expanded(
                 child: SizedBox(
@@ -572,14 +566,15 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                 Obx(() => Text(
-      "Study Resources (${controller.filteredMaterials.length})",
-      style: TextStyle(
-        fontSize: width * 0.045,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textcolor,
-      ),
-    )), SizedBox(
+                  Obx(() => Text(
+                        "Study Resources (${controller.filteredMaterials.length})",
+                        style: TextStyle(
+                          fontSize: width * 0.045,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textcolor,
+                        ),
+                      )),
+                  SizedBox(
                     width: 100,
                     child: TextButton.icon(
                       onPressed: controller.onSortPressed,
