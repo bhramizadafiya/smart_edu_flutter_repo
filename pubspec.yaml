@@ -21,8 +21,6 @@ dependencies:
   percent_indicator: ^4.2.5
   image_picker: ^1.2.1
   docx_file_viewer: ^0.0.7
-  
- 
   flutter_secure_storage: ^9.2.4
   flutter_screenutil: ^5.9.3
   

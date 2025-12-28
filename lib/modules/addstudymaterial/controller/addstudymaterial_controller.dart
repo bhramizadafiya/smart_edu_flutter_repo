@@ -54,7 +54,7 @@ class AddStudyMaterialController extends GetxController {
   final String languageId = 'ybai_language_4m142x5lth';
 
   // Authorization token – in production, store securely
-  final String authToken = 'LP5XfmoNX0qGJOVmGzKUCt1yKejXyvEjLeHvVHfH';
+  final String authToken = '19jnUAD7PlsPXatEukd5tEnCjsfCc3tvpBnejsqc';
 
   StudyMaterialListController? listController;
 

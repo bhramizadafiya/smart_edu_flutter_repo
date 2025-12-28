@@ -34,4 +34,12 @@ class ApiConfig {
   static const String uploadResource = "$baseUrl/upload-resource";
 
   static const String filterResources = '$baseUrl/filter-resources-with-search';
+  
+static const String deleteResources = '$baseUrl/delete-resource';
+  
+
+static const String createResourceVector = '$baseUrl/create-resource-vector';
+
+static const String chatResource = '$baseUrl/chat-resource';
+
   }

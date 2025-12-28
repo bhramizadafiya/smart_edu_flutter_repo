@@ -3,6 +3,7 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smarted/utils/api_endpoints.dart';
 
 class StudyMaterialListController extends GetxController {
   var studyMaterials = <Map<String, dynamic>>[].obs;
@@ -16,8 +17,8 @@ class StudyMaterialListController extends GetxController {
   String? standardId;
   String? subjectId;
 
-  final String userId = 'ybai_users_b4krsayz5l';
-  final String authToken = 'LP5XfmoNX0qGJOVmGzKUCt1yKejXyvEjLeHvVHfH';
+  final String userId = 'ybai_users_sav3bsx1m7';
+  final String authToken = '19jnUAD7PlsPXatEukd5tEnCjsfCc3tvpBnejsqc';
 
   final dio.Dio _dio = dio.Dio();
 
@@ -36,6 +37,7 @@ class StudyMaterialListController extends GetxController {
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade900,
       );
+      return;
     }
 
     fetchResources();
@@ -67,7 +69,7 @@ class StudyMaterialListController extends GetxController {
       };
 
       final response = await _dio.post(
-        'http://smarted.ybaisolution.com/ybai/filter-resources-with-search',
+        ApiConfig.filterResources, // ← Using ApiConfig constant
         data: payload,
         options: dio.Options(
           headers: {
@@ -101,14 +103,14 @@ class StudyMaterialListController extends GetxController {
         studyMaterials.value = mappedList;
         filteredMaterials.value = List.from(mappedList);
       } else {
-        throw Exception('API returned error status');
+        throw Exception('API returned error status: ${response.data['message'] ?? 'Unknown'}');
       }
     } catch (e) {
       String errorMsg = 'Failed to load resources';
       if (e is dio.DioException) {
         errorMsg += ': ${e.message}';
         if (e.response?.data != null) {
-          errorMsg += ' - ${e.response?.data['message'] ?? ''}';
+          errorMsg += ' - ${e.response?.data['message'] ?? 'Server error'}';
         }
       }
 
@@ -127,24 +129,16 @@ class StudyMaterialListController extends GetxController {
     }
   }
 
-  /// FIXED TIME FUNCTION — Now shows "Just now" correctly
+  /// Formats created_at timestamp to relative time (e.g., "5 mins ago", "Just now")
   String _formatTimeAgo(String dateString) {
     try {
-      // API returns: "2025-12-26T11:10:51.263628" → no timezone
-      // We force it to be parsed as UTC by adding 'Z'
       DateTime utcDate = DateTime.parse('${dateString}Z');
-
-      // Convert to local time (e.g., IST = UTC+5:30)
       DateTime localDate = utcDate.toLocal();
 
       final now = DateTime.now();
       final difference = now.difference(localDate);
 
-      if (difference.isNegative) {
-        return 'Just now';
-      }
-
-      if (difference.inMinutes < 1) {
+      if (difference.isNegative || difference.inMinutes < 1) {
         return 'Just now';
       } else if (difference.inMinutes < 60) {
         final mins = difference.inMinutes;
@@ -186,13 +180,13 @@ class StudyMaterialListController extends GetxController {
   int _getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'processed':
-        return 0xFF00C853;
+        return 0xFF00C853; // Green
       case 'processing':
-        return 0xFFFFA000;
+        return 0xFFFFA000; // Amber
       case 'failed':
-        return 0xFFFF1744;
+        return 0xFFFF1744; // Red
       default:
-        return 0xFFFFA000;
+        return 0xFFFFA000; // Amber (Pending)
     }
   }
 
@@ -237,8 +231,72 @@ class StudyMaterialListController extends GetxController {
   }
 
   void onPreviewPressed() {
-    Get.snackbar('Info', 'Preview feature coming soon!',
-        snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Info',
+      'Preview feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  /// Trigger AI vector creation for chatting (uses ApiConfig constant)
+  Future<bool> createResourceVector(String resourceId) async {
+    try {
+      final payload = {
+        "resource_id": resourceId,
+      };
+
+      final response = await _dio.post(
+        ApiConfig.createResourceVector, // ← Clean, centralized URL
+        data: payload,
+        options: dio.Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data['status'] == 'success') {
+        Get.snackbar(
+          'Success',
+          'Resource is now ready for chat!',
+          backgroundColor: Colors.green.shade100,
+          colorText: Colors.green.shade900,
+          duration: const Duration(seconds: 3),
+        );
+        refreshList(); // Update status in list
+        return true;
+      } else {
+        throw Exception(response.data['message'] ?? 'Unknown error');
+      }
+    } catch (e) {
+      String errorMsg = 'Failed to prepare resource for chat';
+      bool alreadyProcessed = false;
+
+      if (e is dio.DioException && e.response?.data != null) {
+        final serverMsg = e.response?.data['message']?.toString() ?? '';
+        errorMsg += ': $serverMsg';
+        if (serverMsg.toLowerCase().contains('already')) {
+          alreadyProcessed = true;
+        }
+      }
+
+      Get.snackbar(
+        alreadyProcessed ? 'Ready' : 'Notice',
+        alreadyProcessed
+            ? 'Resource already processed. Opening chat...'
+            : errorMsg,
+        backgroundColor: alreadyProcessed
+            ? Colors.blue.shade100
+            : Colors.orange.shade100,
+        colorText: alreadyProcessed
+            ? Colors.blue.shade900
+            : Colors.orange.shade900,
+        duration: const Duration(seconds: 4),
+      );
+
+      return alreadyProcessed; // Allow chat if already processed
+    }
   }
 
   /// Update resource via API
@@ -257,7 +315,7 @@ class StudyMaterialListController extends GetxController {
       };
 
       final response = await _dio.post(
-        'http://smarted.ybaisolution.com/ybai/update-resource',
+        ApiConfig.updateResource, 
         data: payload,
         options: dio.Options(
           headers: {
@@ -296,12 +354,10 @@ class StudyMaterialListController extends GetxController {
   /// Delete resource via API
   Future<void> deleteResource(String resourceId) async {
     try {
-      final payload = {
-        "resource_id": resourceId,
-      };
+      final payload = {"resource_id": resourceId};
 
       final response = await _dio.post(
-        'http://smarted.ybaisolution.com/ybai/delete-resource',
+        ApiConfig.deleteResources, // Add if you define it in ApiConfig
         data: payload,
         options: dio.Options(
           headers: {
