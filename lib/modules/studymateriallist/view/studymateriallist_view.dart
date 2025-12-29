@@ -493,7 +493,7 @@ class StudyMaterialListBlending {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white, // ← White background
+                      backgroundColor: Colors.white,
                       foregroundColor: AppColors.bluecolor,
                       elevation: 0,
                       padding: EdgeInsets.symmetric(horizontal: width * 0.02),
@@ -544,6 +544,7 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // === HEADER: Always Visible ===
               Text("Upload New Material", style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.w600, color: AppColors.textcolor)),
               SizedBox(height: height * 0.012),
               StudyMaterialListBlending.uploadCard(context: context, onTap: controller.onUploadPressed),
@@ -617,26 +618,61 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
               ),
               SizedBox(height: height * 0.02),
 
-              Obx(() => controller.filteredMaterials.isEmpty
-                  ? Padding(
-                      padding: EdgeInsets.symmetric(vertical: height * 0.1),
-                      child: Center(
-                        child: Text(
-                          controller.searchQuery.value.isEmpty ? "No study materials available." : "No results found for '${controller.searchQuery.value}'",
-                          style: TextStyle(fontSize: width * 0.04, color: Colors.grey.shade600),
+              // === LIST AREA: Loading, Empty, or List ===
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return Container(
+                    height: height * 0.4, // Adjust height as needed
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: AppColors.textcolor, strokeWidth: 3),
+                        SizedBox(height: 16),
+                        Text("Loading your resources...", style: TextStyle(fontSize: 15, color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  );
+                }
+
+                if (controller.filteredMaterials.isEmpty) {
+                  return Container(
+                    height: height * 0.4,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.menu_book_rounded, size: 80, color: Colors.grey.shade400),
+                        SizedBox(height: 16),
+                        Text(
+                          controller.searchQuery.value.isEmpty
+                              ? "No study materials available yet."
+                              : "No results found for '${controller.searchQuery.value}'",
+                          style: TextStyle(fontSize: width * 0.042, color: Colors.grey.shade600),
                           textAlign: TextAlign.center,
                         ),
-                      ),
-                    )
-                  : Column(
-                      children: controller.filteredMaterials
-                          .map((item) => StudyMaterialListBlending.studyMaterialCard(
-                                context: context,
-                                data: item,
-                                controller: controller,
-                              ))
-                          .toList(),
-                    )),
+                        SizedBox(height: 8),
+                        if (controller.searchQuery.value.isEmpty)
+                          Text(
+                            "Upload your first resource to get started!",
+                            style: TextStyle(fontSize: width * 0.035, color: Colors.grey.shade500),
+                            textAlign: TextAlign.center,
+                          ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: controller.filteredMaterials
+                      .map((item) => StudyMaterialListBlending.studyMaterialCard(
+                            context: context,
+                            data: item,
+                            controller: controller,
+                          ))
+                      .toList(),
+                );
+              }),
             ],
           ),
         ),
@@ -644,7 +680,6 @@ class StudyMaterialListView extends GetView<StudyMaterialListController> {
     );
   }
 }
-
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
 // import '../controller/studymateriallist_controller.dart';

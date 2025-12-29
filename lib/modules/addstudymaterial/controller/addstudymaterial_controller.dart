@@ -50,10 +50,10 @@ class AddStudyMaterialController extends GetxController {
   late String standardId;
   late String subjectId;
 
-  // Fixed language ID (change if it also needs to be dynamic)
+  // Fixed language ID
   final String languageId = 'ybai_language_4m142x5lth';
 
-  // Authorization token – in production, store securely
+  // Authorization token – use secure storage in production
   final String authToken = '19jnUAD7PlsPXatEukd5tEnCjsfCc3tvpBnejsqc';
 
   StudyMaterialListController? listController;
@@ -197,8 +197,6 @@ class AddStudyMaterialController extends GetxController {
             filename: uploadFile.name,
           ),
         ));
-
-        uploadFile.progress.value = 0.0;
       }
 
       final response = await _dio.post(
@@ -219,18 +217,18 @@ class AddStudyMaterialController extends GetxController {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Mark files as uploaded
+        // Mark all files as fully uploaded
         for (var f in files) {
           f.uploaded.value = true;
           f.progress.value = 1.0;
         }
 
-        // === FIXED: Only refresh from server for accurate time & data ===
+        // Refresh the list from server
         if (listController != null) {
-          listController!.refreshList();
-        }
-        // === END FIX ===
+   listController!.refreshList();
+}
 
+        // Show success message
         Get.snackbar(
           'Success!',
           'Study material uploaded successfully',
@@ -238,9 +236,10 @@ class AddStudyMaterialController extends GetxController {
           backgroundColor: Colors.green.shade100,
           colorText: Colors.green.shade900,
           duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
         );
 
-        // Reset form
+        // Clear the form
         titleCtrl.clear();
         descCtrl.clear();
         files.clear();
@@ -249,14 +248,25 @@ class AddStudyMaterialController extends GetxController {
         category.value = 'Textbook';
         isPublic.value = true;
 
-        Get.back();
+        // === REDIRECT TO STUDY MATERIAL LIST ===
+        // Replace current screen with the list screen
+        Get.offNamed('/study-material-list', arguments: {
+          'standard_id': standardId,
+          'subject_id': subjectId,
+        });
+
+        // Alternative if you don't use named routes:
+        // Get.offAll(() => StudyMaterialListView(
+        //   standardId: standardId,
+        //   subjectId: subjectId,
+        // ));
       } else {
         throw 'Server error: ${response.statusCode}';
       }
     } catch (e) {
       String errorMsg = 'Upload failed';
       if (e is dio.DioException) {
-        errorMsg += ': ${e.message}';
+        errorMsg += ': ${e.message ?? ''}';
         if (e.response?.data != null) {
           errorMsg += ' - ${e.response?.data}';
         }
@@ -267,7 +277,7 @@ class AddStudyMaterialController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade100,
           colorText: Colors.red.shade900,
-          duration: const Duration(seconds: 5));
+          duration: const Duration(seconds: 6));
     } finally {
       uploading.value = false;
       saving.value = false;

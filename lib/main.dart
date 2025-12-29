@@ -309,6 +309,7 @@ import 'package:smarted/modules/papertestpreview/binding/papertestpreview_bindin
 import 'package:smarted/modules/papertestpreview/view/papertestpreview_view.dart';
 import 'package:smarted/modules/previewtemplate/binding/previewtemplate_binding.dart';
 import 'package:smarted/modules/previewtemplate/view/previewtemplate_view.dart';
+import 'package:smarted/modules/studymateriallist/controller/studymateriallist_controller.dart';
 import 'package:smarted/modules/testresult/binding/testresult_binding.dart';
 import 'package:smarted/modules/testresult/view/testresult_view.dart';
 import 'package:smarted/modules/viewsolutions/binding/viewsolutions_binding.dart';
@@ -448,15 +449,17 @@ void main() async {
           page: () => const FeatureSelectionView(),
           binding: FeatureSelectionBinding(),
         ),
-        GetPage(
-          name: '/study-material-list',
-          page: () => const StudyMaterialListView(),
-          binding: StudyMaterialListBinding(),
-        ),
+       GetPage(
+      name: '/study-material-list',
+      page: () => StudyMaterialListView(), 
+      binding: BindingsBuilder(() {
+        Get.put(StudyMaterialListController());
+      }),
+    ),
         GetPage(
           name: '/add-study-material',
           page: () => const AddStudyMaterialView(),
-          binding: AddStudyMaterialBinding(),
+         
         ),
         GetPage(
           name: '/add-chapter',
